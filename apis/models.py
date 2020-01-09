@@ -1,0 +1,161 @@
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import ugettext, ugettext_lazy as _
+from django.utils.timezone import utc
+import datetime
+import uuid
+# Create your models here.
+
+class Country(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=100,blank=True)
+    image = models.CharField(max_length=6,blank=True)
+    status = models.IntegerField(blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    class Meta:
+        verbose_name = _('country')
+        verbose_name_plural = _('countries')
+        db_table = "countries"
+
+class Brands(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=100,blank=True)
+    image = models.CharField(max_length=6,blank=True)
+    status = models.IntegerField( blank=True)
+    
+    class Meta:
+        verbose_name = _('brands')
+        verbose_name_plural = _('brands')
+        db_table = "brands"
+
+class User(AbstractUser):
+    pass
+    id = models.BigAutoField(primary_key=True)
+    #phone_status = models.CharField(max_length=64, choices=PHONE_STATUS_CHOICES)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    on_off_notification = models.BooleanField(max_length=64,default=True)
+    last_login_time = models.DateTimeField()
+    device_type = models.CharField(max_length=10, blank=True, null=True)
+    device_id = models.CharField(max_length=255, blank=True, null=True)
+    device_uid = models.CharField(max_length=255, blank=True, null=True)
+    language_code = models.CharField(max_length=64, default='en')
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.last_login_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+        super(User, self).save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = _('auth_user')
+        verbose_name_plural = _('auth_users')
+        db_table = 'auth_user'
+
+
+class ContactUs(models.Model):
+    
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    email = models.EmailField(max_length=255)
+    subject = models.CharField(max_length=100, blank=True, null=True)
+    message = models.TextField(default='')
+    created_time = models.DateTimeField()
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+        super(ContactUs, self).save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = _('contact_us')
+        verbose_name_plural = _('contact_us')
+        db_table = 'contact_us'
+
+class RequestCoupon(models.Model):
+    
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=50, blank=True, null=True)
+    brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
+    store_link = models.CharField(max_length=50, blank=True, null=True)
+    email = models.EmailField(max_length=255)
+    created_time = models.DateTimeField()
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+        super(ContactUs, self).save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = _('request_coupon')
+        verbose_name_plural = _('request_coupon')
+        db_table = 'request_coupon'
+
+class Notification(models.Model):
+    
+    id = models.BigAutoField(primary_key=True)
+    title = models.CharField(max_length=150, blank=True)
+    discription = models.TextField(default='')
+    image = models.CharField(max_length=150, blank=True)
+    brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
+    receiver = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name="notification_receiver")
+    is_read = models.BooleanField(default=False)
+    created_time = models.DateTimeField()
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+        super(ContactUs, self).save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = _('notification')
+        verbose_name_plural = _('notifications')
+        db_table = 'notification'
+
+class Coupon(models.Model):
+    
+    id = models.BigAutoField(primary_key=True)
+    brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    discription = models.TextField(default='')
+    discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
+    store_link = models.CharField(max_length=50, blank=True, null=True)
+    code = models.CharField(max_length=50, blank=True, null=True)
+    status = models.IntegerField( blank=True)
+    headline = models.CharField(max_length=50, blank=True, null=True)
+    created_time = models.DateTimeField()
+    updated_time = models.DateTimeField()
+    no_of_users = models.IntegerField(default=0)
+    last_usage_time = models.DateTimeField()
+    title = models.CharField(max_length=150, blank=True)    
+    is_read = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+            self.updated_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+            self.last_usage_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+        super(ContactUs, self).save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = _('coupon')
+        verbose_name_plural = _('coupon')
+        db_table = 'coupon'
+
+class UserCouponLogs(models.Model):
+    
+    id = models.BigAutoField(primary_key=True)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE)
+    is_used = models.BooleanField(default=False)
+    created_time = models.DateTimeField()
+    def save(self, *args, **kwargs):
+        if not self.id:
+            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+        super(ContactUs, self).save(*args, **kwargs)
+    
+    class Meta:
+        verbose_name = _('user_coupon_logs')
+        verbose_name_plural = _('user_coupon_logs')
+        db_table = 'user_coupon_logs'
