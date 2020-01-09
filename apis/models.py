@@ -9,7 +9,7 @@ import uuid
 class Country(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100,blank=True)
-    image = models.CharField(max_length=6,blank=True)
+    image = models.CharField(max_length=250,blank=True)
     status = models.IntegerField(blank=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
@@ -21,7 +21,8 @@ class Country(models.Model):
 class Brands(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100,blank=True)
-    image = models.CharField(max_length=6,blank=True)
+    image = models.CharField(max_length=255,blank=True)
+    url = models.CharField(max_length=255, blank=True, null=True)
     status = models.IntegerField( blank=True)
     
     class Meta:
@@ -78,7 +79,7 @@ class RequestCoupon(models.Model):
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
-    store_link = models.CharField(max_length=50, blank=True, null=True)
+    store_link = models.CharField(max_length=255, blank=True, null=True)
     email = models.EmailField(max_length=255)
     created_time = models.DateTimeField()
     
@@ -118,10 +119,13 @@ class Coupon(models.Model):
     
     id = models.BigAutoField(primary_key=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
     discription = models.TextField(default='')
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    store_link = models.CharField(max_length=50, blank=True, null=True)
+    store_link = models.CharField(max_length=255, blank=True, null=True)
+    video_link = models.CharField(max_length=255, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
+    image = models.CharField(max_length=255, blank=True, null=True)
     status = models.IntegerField( blank=True)
     headline = models.CharField(max_length=50, blank=True, null=True)
     created_time = models.DateTimeField()
@@ -148,7 +152,7 @@ class UserCouponLogs(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE)
-    is_used = models.BooleanField(default=False)
+    is_used = models.IntegerField(default=0)
     created_time = models.DateTimeField()
     def save(self, *args, **kwargs):
         if not self.id:
@@ -159,3 +163,16 @@ class UserCouponLogs(models.Model):
         verbose_name = _('user_coupon_logs')
         verbose_name_plural = _('user_coupon_logs')
         db_table = 'user_coupon_logs'
+
+
+class UserSelectedBrands(models.Model):
+    id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    
+    
+    class Meta:
+        verbose_name = _('user_selected_brands')
+        verbose_name_plural = _('user_selected_brands')
+        db_table = 'user_selected_brands'
+    
