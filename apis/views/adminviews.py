@@ -181,20 +181,26 @@ def Add_Brands(request):
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
+                country_added = 0
                 check_group = user.groups.filter(name='Admin').exists()
                 if check_group == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-
-            brand_detail=Brands.objects.create(name = request.data['name']
-                                                image = request.data['logo'],
+            if len(request.data['country']) > 0 :
+                for ctry in request.data['country']:
+                    country = Country.objects.filter(id=ctry).first()
+                    if country:
+                        brand_detail=Brands.objects.create(name = request.data['name'],
+                                                # image = request.data['logo'],
                                                 url = request.data['website_url'],
-                                                country = request.data['country'],
-
+                                                country = country,
                                                 )
-            if brand_detail is not None:
+                        country_added = 1
+            else:
+                return Response({"message" : "Please Select Country.", "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            if country_added == 1:
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

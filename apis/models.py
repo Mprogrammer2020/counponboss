@@ -23,6 +23,7 @@ class Brands(models.Model):
     name = models.CharField(max_length=100,blank=True)
     image = models.CharField(max_length=255,blank=True)
     url = models.CharField(max_length=255, blank=True, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     status = models.IntegerField(default=0)
     
     class Meta:
