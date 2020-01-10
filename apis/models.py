@@ -10,7 +10,7 @@ class Country(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100,blank=True)
     image = models.CharField(max_length=250,blank=True)
-    status = models.IntegerField(blank=True)
+    status = models.IntegerField(default=0)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     class Meta:
@@ -23,7 +23,7 @@ class Brands(models.Model):
     name = models.CharField(max_length=100,blank=True)
     image = models.CharField(max_length=255,blank=True)
     url = models.CharField(max_length=255, blank=True, null=True)
-    status = models.IntegerField( blank=True)
+    status = models.IntegerField(default=0)
     
     class Meta:
         verbose_name = _('brands')

@@ -8,6 +8,7 @@ import string
 import random, pytz
 from django.utils import timezone
 
+import traceback
 from apis.models import *
 
 # from appadmin.forms import AddSuperAdminForm
@@ -45,6 +46,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from django.http.response import JsonResponse, HttpResponse
 import pdb;
+from commons.constants import *
 
 
 @api_view(['POST'])
@@ -88,9 +90,9 @@ def AdminLogin(request):
             else:
             	return Response({"status" : "1", 'message':'Please Register Your Account.'}, status=status.HTTP_200_OK)
                                
-    except Exception as e:
-        return Response({'status':0, 'message':"hello"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+    except Exception as e:
+        return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def AdminRegister(request):
@@ -151,8 +153,8 @@ def Add_Coupon(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
-            coupon_detail=Coupon.objects.create(headline = request.data['headline'],
-                                                        code = request.data['code'],
+            coupon_detail=Coupon.objects.create(headline = received_json_data['headline'],
+                                                        code = received_json_data['code'],
                                                         discount_value = request.data['discount_value'],
                                                         description = request.data['description'],
                                                         image = request.data['image'],
@@ -174,7 +176,6 @@ def Add_Coupon(request):
 def Add_Brands(request):
     try:
         with transaction.atomic():
-            received_json_data = json.loads(request.body, strict=False)
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
@@ -186,8 +187,9 @@ def Add_Brands(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
-            brand_detail=Coupon.objects.create(logo = request.data['logo'],
-                                                website_url = request.data['website_url'],
+            brand_detail=Brands.objects.create(name = request.data['name']
+                                                image = request.data['logo'],
+                                                url = request.data['website_url'],
                                                 country = request.data['country'],
 
                                                 )
@@ -204,7 +206,6 @@ def Add_Brands(request):
 def Add_Country(request):
     try:
         with transaction.atomic():
-            received_json_data = json.loads(request.body, strict=False)
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
@@ -216,8 +217,10 @@ def Add_Country(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
-            country_detail=Coupon.objects.create(country_name = request.data['country_name'],
-                                                    flag = request.data['flag'],
+            country_detail=Country.objects.create(name = request.data['country_name'],
+                                                    image = request.data['flag'],
+                                                    latitude = request.data['lat'],
+                                                    longitude = request.data['long']
                                                       )
             if country_detail is not None:
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
