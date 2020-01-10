@@ -120,6 +120,7 @@ def AdminRegister(request):
                                          first_name='firstname',
                                          last_name='',
                                          password="123456789",
+                                         password=make_password(request.data['password']),
                                          device_type=deviceType,
                                          device_id=deviceId,
                                          language_code= "en",
