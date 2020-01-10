@@ -23,5 +23,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('apis/add_coupon', api_views.Add_Coupon, name='Add_Coupon'),
     path('apis/add_country', api_views.Add_Country, name='Add_Country'),
+    path('apis/register', api_views.AdminRegister, name='AdminRegister'),
+    path('apis/login', api_views.AdminLogin, name='AdminLogin'),
+    path('apis/logout', api_views.LogoutAppUser, name='LogoutAppUser'),
     path('apis/add_brands', api_views.Add_Brands, name='Add_Brands'),
 ]
