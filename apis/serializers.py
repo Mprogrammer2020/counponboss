@@ -4,46 +4,45 @@ from apis.models import *
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields =__all__
+        fields =('__all__')
 
 class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = __all__
+        fields = ('__all__')
         
 class UserCouponLogsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = UserCouponLogs
-        fields = __all__
+        fields = ('__all__')
 
 class BrandSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Brands
-        fields = __all__
+        fields = ('__all__')
 
 class ContactUsSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ContactUs
-        fields = __all__
+        fields = ('__all__')
 
 class RequestCouponSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = RequestCoupon
-        fields = __all__
-
+        fields =('__all__')
 class NotificationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Notification
-        fields = __all__
+        fields =('__all__')
 
 class CouponSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Coupon
-        fields = __all__
+        fields =('__all__')
