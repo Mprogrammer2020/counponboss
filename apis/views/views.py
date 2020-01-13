@@ -59,15 +59,24 @@ editSuccessMessage = "Successfully Edited."
 def UserLogin(request):
     try:
         with transaction.atomic():
+
             deviceId = request.data['device_id']
-            email = request.data['email']
-            password = request.data['password']
+            language_code = request.data.get('language_code')
+            countryId = request.data.get('countryId')
+            BrandId = request.data.get('BrandId')
+            email = request.data.get('email')
+
             if request.POST.get('deviceType') is not None:
                 deviceType = request.data['deviceType']
             else:
                 deviceType = "a"
+
             if email is None or email == "Null" or email == "null":
                 email = deviceId+"@couponboss.com"
+
+            if language_code is None or email == "Null" or email == "null":
+                    language_code = "en" 
+
             username = deviceId
             nowTime = datetime.now()            
             try:
@@ -76,9 +85,24 @@ def UserLogin(request):
             except:
                 existedUser = None
             if existedUser is not None:
-                authUser = authenticate(username=email, password=password)
+                authUser = authenticate(username=email, password=deviceId)
                 checkGroup = authUser.groups.filter(name='User').exists()
+
                 if checkGroup:
+                    filter_user =  User.objects.filter(device_id =deviceId)
+                    filter_user.update( language_code=language_code)
+                    # Set User Brands During Login
+                    # Deleted Current User Brands
+                    delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
+
+                    # Added User Brands 
+                    for brandid in request.data['BrandId']:
+                        brand = Brands.objects.get(id=brandid)
+                        if brand:
+                            user_brands=UserSelectedBrands.objects.create(brand = brand,
+                                                    user = authUser
+
+                                                )
                     token = ''                    
                     try:
                         user_with_token = Token.objects.get(user=authUser)
