@@ -171,11 +171,11 @@ def Get_Admin_Profile(request):
                     return Response({"message": "Session expired!! please login again", "status": "0"},
                                     status=status.HTTP_401_UNAUTHORIZED)
                 if checkGroup:
-                    user = Users.objects.get(user_auth_id=user.id)
+                    user = User.objects.get(id=user.id)
 
                     dataList = {
-                        "firstName":user.firstName,
-                        "lastName":user.lastName,
+                        "firstName":user.first_name,
+                        "lastName":user.last_name,
                         "email":user.email
 
                         }
@@ -213,7 +213,8 @@ def Add_Coupon(request):
                                                         image = request.data['image'],
                                                         brand_id = request.data['brand'],
                                                         country_id = request.data['country'],
-                                                        video_link = request.data['video_link']
+                                                        video_link = request.data['video_link'],
+                                                        status = 1
 
                                                       )
             if coupon_detail is not None:
@@ -305,7 +306,7 @@ def Delete_Coupon(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
             couponId=request.data['id']
-            dele=Coupon.objects.filter(id=couponId).delete()
+            dele=Coupon.objects.filter(id=couponId).update( status = 0)
             if dele:
                 return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
@@ -475,7 +476,8 @@ def Add_Country(request):
             country_detail=Country.objects.create(name = request.data['country_name'],
                                                     image = request.data['flag'],
                                                     latitude = request.data['lat'],
-                                                    longitude = request.data['long']
+                                                    longitude = request.data['long'],
+                                                    status = 1
                                                       )
             if country_detail is not None:
                 serialized_data = CountrySerializer(country_detail)
@@ -500,9 +502,10 @@ def Delete_Country(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-
             countryId=request.data['id']
-            dele=Country.objects.filter(id=countryId).delete()
+            country = Country.objects.get(id = countryId)
+            if brand is not None:
+                dele=Country.objects.filter(id = countryId).update(status = 0)
             if dele:
                 return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
@@ -537,6 +540,35 @@ def Get_Countries(request):
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def Get_Coupon_request(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            requested_coupon_list = RequestCoupon.objects.filter()
+            reqCoupon_serializer = RequestCouponSerializer(requested_coupon_list, many = True)
+            return Response({"message" : addSuccessMessage, "response" : reqCoupon_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+
+
+            #else:
+            #    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 
 @api_view(['POST'])
@@ -673,3 +705,51 @@ def SendNotification(request):
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+@api_view(['POST'])
+def Change_Admin_Password(request):
+    try:
+        with transaction.atomic():
+
+            API_key = request.META.get('HTTP_AUTHORIZATION')
+            if API_key is not None:
+                try:
+                    token1 = Token.objects.get(key=API_key)
+                    user = token1.user
+
+                    checkGroup = user.groups.filter(name='Admin').exists()
+                except:
+                    return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+                if checkGroup:
+                    user1 = User.objects.get(id=user.id)
+
+                    currentPassword = request.data['oldPassword']
+                    newPassword = request.data['newPassword']
+                    confirmPassword = request.data['confirmPassword']
+
+                    success = user.check_password(str(currentPassword))
+                    if success:
+                        if currentPassword == newPassword:
+                            return Response({"message": "Please Enter a Different Password", "status": "0"},status=status.HTTP_406_NOT_ACCEPTABLE)
+                        else:
+                            u = User.objects.get(id=user.id)
+                            if newPassword == confirmPassword:
+                                u.set_password(newPassword)
+                                u.save()
+                                result = User.objects.filter(id=user.id).update(password = make_password(newPassword))
+                                if result:
+                                    return Response({"status": "1", "message": "Password changed successfully!"},status=status.HTTP_200_OK)
+                                else:
+                                    return Response({"message": errorMessage, "status": "0"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                            else:
+                                return Response({"message": "newPassword and ConfirmPassword not Matched", "status": "0"},status=status.HTTP_406_NOT_ACCEPTABLE)
+                    else:
+                        return Response({"message": "Current password incorrect", "status": "0"},
+                                        status=status.HTTP_406_NOT_ACCEPTABLE)
+
+                else:
+                    return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

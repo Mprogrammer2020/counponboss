@@ -144,7 +144,7 @@ class Coupon(models.Model):
     no_of_users = models.IntegerField(default=0)
     last_usage_time = models.DateTimeField()
     title = models.CharField(max_length=150, blank=True)    
-    is_read = models.BooleanField(default=False)
+    is_featured = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):
         if not self.id:
