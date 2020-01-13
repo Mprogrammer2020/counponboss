@@ -206,16 +206,23 @@ def Add_Coupon(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
+            is_featured = request.data.get('is_featured')
+            image = request.data.get('image')
+            
+            if is_featured is None or is_featured == "Null" or is_featured == "null":
+                is_featured = False
+            if image is None or image == "Null" or image == "null":
+                image = None
             coupon_detail=Coupon.objects.create(headline = request.data['headline'],
                                                         code = request.data['code'],
                                                         discount = request.data['discount'],
                                                         description = request.data['description'],
-                                                        image = request.data['image'],
+                                                        image = image,
                                                         brand_id = request.data['brand'],
                                                         country_id = request.data['country'],
                                                         video_link = request.data['video_link'],
-                                                        status = 1
-
+                                                        status = 1,
+                                                        is_featured=is_featured
                                                       )
             if coupon_detail is not None:
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)

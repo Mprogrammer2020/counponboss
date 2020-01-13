@@ -18,6 +18,7 @@ from django.urls import path,include
 from django.conf import settings
 from apis import views as api_views
 from apis.views import adminviews as AdminViews
+from django.conf.urls import include, url
 
 urlpatterns = [
     # Admin Uls
@@ -45,5 +46,11 @@ urlpatterns = [
 
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),
-    path('apis/userlogin', api_views.UserLogin, name='UserLogin')
+    path('apis/userlogin', api_views.UserLogin, name='UserLogin'),
+    path('apis/filter', api_views.filter, name='filter'),
+    path('apis/usedcoupon', api_views.UsedCoupon, name='UsedCoupon'),
+    path('apis/onoffnotification', api_views.OnOffNotification, name='OnOffNotification'),
+    path('apis/notificationlist', api_views.NotificationList, name='NotificationList'),
+    path('apis/home', api_views.Home, name='Home'),
+    url('^apis/(?P<id>\d+)/coupondetails',api_views.CouponDetails, name='CouponDetails'),
 ]
