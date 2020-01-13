@@ -32,4 +32,8 @@ urlpatterns = [
     path('apis/login', api_views.AdminLogin, name='AdminLogin'),
     path('apis/logout', api_views.LogoutAppUser, name='LogoutAppUser'),
     path('apis/add_brands', api_views.Add_Brands, name='Add_Brands'),
+    path('apis/edit_brands', api_views.Edit_Brands, name='Edit_Brands'),
+    path('apis/show_brand', api_views.Show_Brand, name='Show_Brand'),
+    path('apis/edit_brand', api_views.Edit_Brands, name='Edit_Brands'),
+    path('apis/delete_brand', api_views.Delete_Brand, name='Delete_Brand'),
 ]

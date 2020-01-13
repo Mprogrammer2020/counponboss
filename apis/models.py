@@ -23,13 +23,23 @@ class Brands(models.Model):
     name = models.CharField(max_length=100,blank=True)
     image = models.CharField(max_length=255,blank=True)
     url = models.CharField(max_length=255, blank=True, null=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     status = models.IntegerField(default=0)
     
     class Meta:
         verbose_name = _('brands')
         verbose_name_plural = _('brands')
         db_table = "brands"
+
+
+class BrandCountries(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    
+    class Meta:
+        verbose_name = _('brand_countries')
+        verbose_name_plural = _('brand_countries')
+        db_table = "brand_countries"
 
 class User(AbstractUser):
     pass

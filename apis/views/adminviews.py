@@ -49,12 +49,16 @@ from django.http.response import JsonResponse, HttpResponse
 import pdb;
 from commons.constants import *
 
-@csrf_exempt
+
+errorMessage = "Sorry! Something went wrong."
+addSuccessMessage = "Successfully added."
+loginSuccessMessage = "Successfully login"
+editSuccessMessage = "Successfully Edited."
+
 @api_view(['POST'])
 def AdminLogin(request):
     try:
         with transaction.atomic():
-            loginType = request.data['login_type']
             deviceId = request.data['device_id']
             email = request.data['email']
             password = request.data['password']
@@ -65,6 +69,7 @@ def AdminLogin(request):
             if email is None or email == "Null" or email == "null":
                 email = deviceId+"@couponboss.com"
             username = deviceId
+
             print(deviceId)
             nowTime = datetime.now()            
             try:
@@ -322,26 +327,130 @@ def Add_Brands(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            if len(request.data['country']) > 0 :
+            if len(request.data['country']) > 0 :                
+                brand_detail=Brands.objects.create(name = request.data['name'],
+                                                # image = request.data['logo'],
+                                                url = request.data['website_url'])
                 for ctry in request.data['country']:
                     country = Country.objects.filter(id=ctry).first()
                     if country:
-                        brand_detail=Brands.objects.create(name = request.data['name'],
-                                                image = request.data['logo'],
-                                                url = request.data['website_url'],
-                                                country = country,
+
+                        brand_countries=BrandCountries.objects.create(brand = brand_detail,
+                                                country = country
 
                                                 )
                         country_added = 1
             else:
                 return Response({"message" : "Please Select Country.", "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            if country_added == 1:
+            if brand_detail is not None :
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['PUT'])
+def Edit_Brands(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                country_added = 0
+                brandId = request.data['brandId']
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            brand =  Brands.objects.filter(id=brandId)
+            if brand is not None:
+                if len(request.data['country']) > 0 :
+                    brand_detail=Brands.objects.filter(id=brandId).update(name = request.data['name'],
+                                                    # image = request.data['logo'],
+                                                    url = request.data['website_url'])
+                    delete_brand_countries = BrandCountries.objects.filter(brand_id__in=brand).delete()
+                    for ctry in request.data['country']:
+                        country = Country.objects.filter(id=ctry).first()
+                        currentbrand =  Brands.objects.get(id=brandId)
+                        if country:
+                            brand_countries=BrandCountries.objects.create(brand = currentbrand,
+                                                country = country
+                                                )
+                            country_added = 1
+                else:
+                    return Response({"message" : "Please Select Country.", "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+                if country_added == 1:
+                    return Response({"message" : editSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            else:
+                return Response({"message" : "Brand Not Found", "status" : "0"}, status=status.HTTP_201_CREATED)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def Show_Brand(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                country_added = 0
+                brandId = request.data['brandId']
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+           
+            brand = Brands.objects.get(id=brandId)
+            brand_country = BrandCountries.objects.filter(brand_id=brandId)
+            country_ids = brand_country.values_list('country_id', flat=True)
+            countries = Country.objects.filter(id__in = country_ids)
+            selected_country = CountrySerializer(countries, many=True)
+            brand_detail = BrandSerializer(brand)
+            return Response({"message" : addSuccessMessage, "status" : "1", "brand": brand_detail.data, "selected_country": selected_country.data}, status=status.HTTP_201_CREATED)
+            
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def Delete_Brand(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                country_added = 0
+                brandId = request.data['brandId']
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+           
+            brand = Brands.objects.get(id=brandId)
+
+            if brand is not None:
+                delete_brand_countries = BrandCountries.objects.filter(brand=brand).delete()
+                brand.delete()
+                return Response({"message" : "Brand Deleted Successfully.", "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : "Brand Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 
 @api_view(['POST'])
