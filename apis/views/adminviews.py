@@ -10,6 +10,7 @@ from django.utils import timezone
 
 import traceback
 from apis.models import *
+from django.views.decorators.csrf import csrf_exempt
 
 # from appadmin.forms import AddSuperAdminForm
 from django.contrib.auth import authenticate
@@ -48,7 +49,7 @@ from django.http.response import JsonResponse, HttpResponse
 import pdb;
 from commons.constants import *
 
-
+@csrf_exempt
 @api_view(['POST'])
 def AdminLogin(request):
     try:
@@ -56,6 +57,7 @@ def AdminLogin(request):
             loginType = request.data['login_type']
             deviceId = request.data['device_id']
             email = request.data['email']
+            password = request.data['password']
             if request.POST.get('deviceType') is not None:
                 deviceType = request.data['deviceType']
             else:
@@ -63,13 +65,16 @@ def AdminLogin(request):
             if email is None or email == "Null" or email == "null":
                 email = deviceId+"@couponboss.com"
             username = deviceId
+            print(deviceId)
             nowTime = datetime.now()            
             try:
                 existedUser = User.objects.get(device_id =deviceId)
+                print(existedUser)
             except:
                 existedUser = None
             if existedUser is not None:
-                authUser = authenticate(username=deviceId, password=deviceId)
+                authUser = authenticate(username=email, password=password)
+                print(authUser,"aaaaa")
                 checkGroup = authUser.groups.filter(name='Admin').exists()
                 if checkGroup:
                     token = ''                    
@@ -85,15 +90,21 @@ def AdminLogin(request):
                         token1 = Token.objects.create(user=authUser)
                         token = token1.key 
                     serialized_data = UserSerializer(existedUser)
-                    userDetail = {'token':token, 'user': serialized_data }
+                    userDetail = {'token':token, 'user': serialized_data.data }
                     return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail}, status=status.HTTP_200_OK)
             else:
             	return Response({"status" : "1", 'message':'Please Register Your Account.'}, status=status.HTTP_200_OK)
                                
 
     except Exception as e:
+        print(traceback.format_exc())
         return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+
+
+@csrf_exempt
 @api_view(['POST'])
 def AdminRegister(request):
     try:
@@ -115,11 +126,10 @@ def AdminRegister(request):
             if existedUser is not None:
                 return Response({"status" : "1", 'message':'User Already Registered'}, status=status.HTTP_200_OK)
             else:
-                authUser = User.objects.create_user(username=email,
+                authUser = User.objects.create(username=email,
                                          email=email,
                                          first_name='firstname',
                                          last_name='',
-                                         password="123456789",
                                          password=make_password(request.data['password']),
                                          device_type=deviceType,
                                          device_id=deviceId,
@@ -136,13 +146,48 @@ def AdminRegister(request):
                 userDetail = {'token':token.key, 'user': serialized_data.data}
                 return Response({"status" : "1", 'message':'User has been successfully registered.', 'user' : userDetail}, status=status.HTTP_200_OK)                               
     except Exception as e:
+        print(traceback.format_exc())
         return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def Get_Admin_Profile(request):
+    try:
+        with transaction.atomic():
+            API_key = request.META.get('HTTP_AUTHORIZATION')
+            if API_key is not None:
+                try:
+                    token1 = Token.objects.get(key=API_key)
+                    user = token1.user
+                    checkGroup = user.groups.filter(name='Admin').exists()
+                except:
+                    return Response({"message": "Session expired!! please login again", "status": "0"},
+                                    status=status.HTTP_401_UNAUTHORIZED)
+                if checkGroup:
+                    user = Users.objects.get(user_auth_id=user.id)
+
+                    dataList = {
+                        "firstName":user.firstName,
+                        "lastName":user.lastName,
+                        "email":user.email
+
+                        }
+                    return Response({"status": "1", 'message': 'Get successfully.', 'data':dataList}, status=status.HTTP_200_OK)
+
+                else:
+                    return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    except Exception as e:
+        print(traceback.format_exc())
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['POST'])
 def Add_Coupon(request):
     try:
         with transaction.atomic():
-            received_json_data = json.loads(request.body, strict=False)
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
@@ -154,13 +199,13 @@ def Add_Coupon(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
-            coupon_detail=Coupon.objects.create(headline = received_json_data['headline'],
-                                                        code = received_json_data['code'],
-                                                        discount_value = request.data['discount_value'],
+            coupon_detail=Coupon.objects.create(headline = request.data['headline'],
+                                                        code = request.data['code'],
+                                                        discount = request.data['discount'],
                                                         description = request.data['description'],
                                                         image = request.data['image'],
-                                                        brand = request.data['brand'],
-                                                        country = request.data['country'],
+                                                        brand_id = request.data['brand'],
+                                                        country_id = request.data['country'],
                                                         video_link = request.data['video_link']
 
                                                       )
@@ -172,6 +217,95 @@ def Add_Coupon(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+@api_view(['POST'])
+def Edit_Coupon(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            
+            coupon = Coupon.objects.filter(id = request.data['id']).update(headline = request.data['headline'],
+                                                        code = request.data['code'],
+                                                        discount = request.data['discount'],
+                                                        description = request.data['description'],
+                                                        image = request.data['image'],
+                                                        brand_id = request.data['brand'],
+                                                        country_id = request.data['country'],
+                                                        video_link = request.data['video_link']
+                                                        )
+            if coupon is not None:
+                
+                return Response({"message" : editSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def Get_Coupons(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            coupons_list = Coupon.objects.filter()
+            coupon_serializer = CouponSerializer(coupons_list, many = True)
+            return Response({"message" : addSuccessMessage, "response" : coupon_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+
+
+            #else:
+            #    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(['POST'])
+def Delete_Coupon(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            couponId=request.data['id']
+            dele=Coupon.objects.filter(id=couponId).delete()
+            if dele:
+                return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['POST'])
 def Add_Brands(request):
@@ -193,9 +327,10 @@ def Add_Brands(request):
                     country = Country.objects.filter(id=ctry).first()
                     if country:
                         brand_detail=Brands.objects.create(name = request.data['name'],
-                                                # image = request.data['logo'],
+                                                image = request.data['logo'],
                                                 url = request.data['website_url'],
                                                 country = country,
+
                                                 )
                         country_added = 1
             else:
@@ -230,12 +365,66 @@ def Add_Country(request):
                                                     longitude = request.data['long']
                                                       )
             if country_detail is not None:
-                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+                serialized_data = CountrySerializer(country_detail)
+                return Response({"message" : addSuccessMessage, "status" : "1","country_detail": serialized_data.data}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def Delete_Country(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            countryId=request.data['id']
+            dele=Country.objects.filter(id=countryId).delete()
+            if dele:
+                return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['GET'])
+def Get_Countries(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            countries_list = Country.objects.filter()
+            country_serializer = CountrySerializer(countries_list, many = True)
+            return Response({"message" : addSuccessMessage, "response" : country_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+
+
+            #else:
+            #    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 @api_view(['POST'])
 def LogoutAppUser(request):

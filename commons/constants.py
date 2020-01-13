@@ -1,3 +1,7 @@
 errorMessage = "Sorry! Something went wrong."
 addSuccessMessage = "Successfully added."
 loginSuccessMessage = "Successfully login"
+errorEmailPasswordIncorrect = "email or password is incorrect"
+deleteSuccessMessage = "Successfully deleted"
+editSuccessMessage = "Successfully edited"
+errorMessageUnauthorised = "Unauthorized"

@@ -87,7 +87,7 @@ class RequestCoupon(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(ContactUs, self).save(*args, **kwargs)
+        super(RequestCoupon, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('request_coupon')
@@ -109,7 +109,7 @@ class Notification(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(ContactUs, self).save(*args, **kwargs)
+        super(Notification, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('notification')
@@ -121,13 +121,13 @@ class Coupon(models.Model):
     id = models.BigAutoField(primary_key=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
-    discription = models.TextField(default='')
+    description = models.TextField(default='')
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     store_link = models.CharField(max_length=255, blank=True, null=True)
     video_link = models.CharField(max_length=255, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
     image = models.CharField(max_length=255, blank=True, null=True)
-    status = models.IntegerField( blank=True)
+    status = models.IntegerField(default=0)
     headline = models.CharField(max_length=50, blank=True, null=True)
     created_time = models.DateTimeField()
     updated_time = models.DateTimeField()
@@ -141,7 +141,7 @@ class Coupon(models.Model):
             self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
             self.updated_time = datetime.datetime.utcnow().replace(tzinfo=utc)
             self.last_usage_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(ContactUs, self).save(*args, **kwargs)
+        super(Coupon, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('coupon')
@@ -158,7 +158,7 @@ class UserCouponLogs(models.Model):
     def save(self, *args, **kwargs):
         if not self.id:
             self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(ContactUs, self).save(*args, **kwargs)
+        super(UserCouponLogs, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('user_coupon_logs')
