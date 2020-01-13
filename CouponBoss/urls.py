@@ -36,4 +36,7 @@ urlpatterns = [
     path('apis/show_brand', api_views.Show_Brand, name='Show_Brand'),
     path('apis/edit_brand', api_views.Edit_Brands, name='Edit_Brands'),
     path('apis/delete_brand', api_views.Delete_Brand, name='Delete_Brand'),
+    path('apis/dashboard', api_views.Dashboard, name='Dashboard'),
+    path('apis/countactus', api_views.Contact_us, name='Contact_us'),
+    path('apis/sendnotification', api_views.SendNotification, name='SendNotification'),
 ]
