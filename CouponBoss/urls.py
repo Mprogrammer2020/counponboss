@@ -20,6 +20,7 @@ from apis import views as api_views
 from apis.views import adminviews as AdminViews
 
 urlpatterns = [
+    # Admin Uls
     path('admin/', admin.site.urls),
     path('apis/add_coupon', api_views.Add_Coupon, name='Add_Coupon'),
     path('apis/delete_coupon', api_views.Delete_Coupon, name='Delete_Coupon'),
@@ -41,4 +42,8 @@ urlpatterns = [
     path('apis/dashboard', api_views.Dashboard, name='Dashboard'),
     path('apis/countactus', api_views.Contact_us, name='Contact_us'),
     path('apis/sendnotification', api_views.SendNotification, name='SendNotification'),
+
+    #User App Urls
+    path('apis/userregister', api_views.UserRegister, name='UserRegister'),
+    path('apis/userlogin', api_views.UserLogin, name='UserLogin')
 ]
