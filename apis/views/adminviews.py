@@ -222,7 +222,9 @@ def Add_Coupon(request):
                                                         country_id = request.data['country'],
                                                         video_link = request.data['video_link'],
                                                         status = 1,
-                                                        is_featured=is_featured
+                                                        is_featured=is_featured,
+                                                        description_ar=request.data['description_ar'],
+                                                        headline_ar=request.data['headline_ar']
                                                       )
             if coupon_detail is not None:
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
@@ -426,7 +428,7 @@ def Show_Brand(request):
                 countries = Country.objects.filter(id__in = country_ids)
                 selected_country = CountrySerializer(countries, many=True)
                 brand_detail = BrandSerializer(brand)
-                return Response({"message" : addSuccessMessage, "status" : "1", "brand": brand_detail.data, "selected_country": selected_country.data}, status=status.HTTP_201_CREATED)
+                return Response({"message" : addSuccessMessage, "status" : "1", "brand": brand_detail.data, "brands_country": selected_country.data}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Brand Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -481,7 +483,7 @@ def Add_Country(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
             country_detail=Country.objects.create(name = request.data['country_name'],
-                                                    image = request.data['flag'],
+                                                    # image = request.data['flag'],
                                                     latitude = request.data['lat'],
                                                     longitude = request.data['long'],
                                                     status = 1

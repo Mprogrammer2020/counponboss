@@ -221,10 +221,9 @@ def CouponDetails(request, id):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             couponId = id
-            coupon = Coupon.objects.get(id=couponId)
-
-            if coupon is not None:
-                coupon_detail = CouponSerializer(coupon)
+            coupon = Coupon.objects.filter(id=couponId)
+            if coupon.count()>0:
+                coupon_detail = CouponSerializer(coupon.first())
                 return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Coupon Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
