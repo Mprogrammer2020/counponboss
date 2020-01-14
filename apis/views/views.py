@@ -404,32 +404,7 @@ def Brands_List(request):
 
 
 
-api_view(['POST'])
-def Select_Brands(request):
-    try:
-        with transaction.atomic():
-            try:
-                api_key = request.META.get('HTTP_AUTHORIZATION')
-                token1 = Token.objects.get(key=api_key)
-                user = token1.user
-                check_group = user.groups.filter(name='User').exists()
-                if check_group == False:
-                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            except:
-                print(traceback.format_exc())
-                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            list = received_json_data['Brands_selected']
-            for Brands_selected in list:
-                print(data)
-                UserSelectedBrands.objects.create(user_id = user.id,
-                                               brand_id = Brands_selected
-                                               )
 
-            return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_200_OK)
-            
-    except Exception:
-        print(traceback.format_exc())
-        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['POST'])
