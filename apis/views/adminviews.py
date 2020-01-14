@@ -222,9 +222,9 @@ def Add_Coupon(request):
                                                         country_id = request.data['country'],
                                                         video_link = request.data['video_link'],
                                                         status = 1,
-                                                        is_featured=is_featured,
-                                                        description_ar=request.data['description_ar'],
-                                                        headline_ar=request.data['headline_ar']
+                                                        is_featured=is_featured
+                                                        # headline_ar = request.data['headline_ar'],
+                                                        # description_ar = request.data['description_ar'],
                                                       )
             if coupon_detail is not None:
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
@@ -513,7 +513,7 @@ def Delete_Country(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             countryId=request.data['id']
             country = Country.objects.get(id = countryId)
-            if brand is not None:
+            if country is not None:
                 dele=Country.objects.filter(id = countryId).update(status = 0)
             if dele:
                 return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
@@ -671,8 +671,10 @@ def SendNotification(request):
 
             # Get Notification Data
 
-            title=request.data['title']
+            title = request.data['title']
+            title_ar = request.data['title_ar']
             description=request.data['description']
+            description_ar = request.data['description_ar']
             userId=request.data['userId']
             if request.data['image'] is None:
                 image = None
@@ -695,10 +697,10 @@ def SendNotification(request):
 
             user_json = UserSerializer(user)
             if user_json.data["on_off_notification"]:
-
                 # Notification Created
-                notifify = Notification.objects.create(title=title, discription=description, image= image, brand= brand, country=country, receiver=user)
-                notifify_json = NotificationSerializer(notifify)
+                notifify = Notification.objects.create(title=title, discription=description, image= image, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar)
+                notifify_json = NotificationSerializer(notifify, many=True)
+                
                 #Send Fcm Notification
                 push_service = FCMNotification(api_key=fcm_api_key)
                 registration_id = user_json.data["device_id"]
@@ -714,6 +716,7 @@ def SendNotification(request):
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 @api_view(['POST'])
 def Change_Admin_Password(request):
     try:

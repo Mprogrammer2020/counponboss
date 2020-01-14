@@ -108,7 +108,9 @@ class Notification(models.Model):
     
     id = models.BigAutoField(primary_key=True)
     title = models.CharField(max_length=150, blank=True)
+    title_ar = models.CharField(max_length=150, blank=True)
     discription = models.TextField(default='')
+    discription_ar = models.TextField(default='')
     image = models.CharField(max_length=150, blank=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
@@ -132,7 +134,7 @@ class Coupon(models.Model):
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(default='')
-    description_ar = models.TextField(default='')
+    description_ar = models.TextField(default='') 
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     store_link = models.CharField(max_length=255, blank=True, null=True)
     video_link = models.CharField(max_length=255, blank=True, null=True)
@@ -146,7 +148,6 @@ class Coupon(models.Model):
     no_of_users = models.IntegerField(default=0)
     last_usage_time = models.DateTimeField()
     title = models.CharField(max_length=150, blank=True)    
-    title_ar = models.CharField(max_length=150, blank=True)    
     is_featured = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):

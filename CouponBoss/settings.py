@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'CouponBoss.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'couponboss',
+        'NAME': 'coupon',
         'USER': 'root',
         'PASSWORD': 'root',
         #'PASSWORD': 'Netset@123',

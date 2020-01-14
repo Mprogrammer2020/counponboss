@@ -475,7 +475,7 @@ def Contact_Us(request):
 
 
 @api_view(['POST'])
-def Coupon_Log(request):
+def Shop_Now(request):
     try:
         with transaction.atomic():
             try:
@@ -495,11 +495,16 @@ def Coupon_Log(request):
                                             )
                     
             if coupLog is not None :
+                cop = Coupon.objects.get(id = request.data['coupon'])
+                no_user = cop.no_of_users
+                print(no_user)
+                Coupon.objects.filter(id = request.data['coupon']).update(no_of_users = no_user +1)
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     except Exception as e:
+        print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -551,10 +556,9 @@ def Is_Coupon_Useful(request):
             elif request.data['useful'] == "No":
                 coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 2)
             else:
-                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 3)
+                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 0)
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
 
     except Exception as e:
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
