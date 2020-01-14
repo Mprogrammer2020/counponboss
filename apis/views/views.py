@@ -375,3 +375,211 @@ def Home(request):
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+@api_view(['GET'])
+def Countries_List(request):
+    try:
+        with transaction.atomic():
+            
+            countries_list = Country.objects.filter()
+            country_serializer = CountrySerializer(countries_list, many = True)
+            return Response({"message" : addSuccessMessage, "response" : country_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def Brands_List(request):
+    try:
+        with transaction.atomic():
+            
+            brand_list = Brands.objects.filter()
+            brand_serializer = BrandSerializer(brand_list, many = True)
+            return Response({"message" : addSuccessMessage, "response" : brand_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+api_view(['POST'])
+def Select_Brands(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            list = received_json_data['Brands_selected']
+            for Brands_selected in list:
+                print(data)
+                UserSelectedBrands.objects.create(user_id = user.id,
+                                               brand_id = Brands_selected
+                                               )
+
+            return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_200_OK)
+            
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def Request_Coupon(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                print(token1)
+                user = token1.user
+                print(user)
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            user1 = User.objects.get(id=user.id)
+                
+            reqCoupon = RequestCoupon.objects.create(
+                                                name = request.data['name'],
+                                                store_link = request.data['store_link'],
+                                                email = request.data['email'],
+                                                country_id = request.data['country'],
+                                                user_id=user.id
+                                                )
+            if reqCoupon is not None :
+                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                    return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+    except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+@api_view(['POST'])
+def Contact_Us(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+                
+            contact_us = ContactUs.objects.create(
+                                            email = request.data['email'],
+                                            subject = request.data['subject'],
+                                            message = request.data['message'],
+                                            user_id = user.id
+                                            )
+                    
+            if contact_us is not None :
+                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def Coupon_Log(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            
+            coupLog = UserCouponLogs.objects.create(
+                                            user_id = user.id,
+                                            coupon_id = request.data['coupon']
+                                            )
+                    
+            if coupLog is not None :
+                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def Code_Worked(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            
+            couponId = request.GET['coupon']
+            coup = Coupon.objects.get(id = couponId)
+            dataList = {
+                        "image":coup.image,
+                        "code":coup.code
+                        }
+
+            return Response({ 'data': dataList ,"status" : "1"}, status=status.HTTP_200_OK)
+
+    except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def Is_Coupon_Useful(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            couponId = request.data['coupon_id']
+            if request.data['useful'] == "Yes":
+                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 1)
+            elif request.data['useful'] == "No":
+                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 2)
+            else:
+                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 3)
+                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
