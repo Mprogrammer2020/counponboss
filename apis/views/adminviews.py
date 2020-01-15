@@ -57,13 +57,14 @@ loginSuccessMessage = "Successfully login"
 editSuccessMessage = "Successfully Edited."
 fcm_api_key = "1234567890"
 
+@csrf_exempt
 @api_view(['POST'])
 def AdminLogin(request):
     try:
         with transaction.atomic():
-            deviceId = request.data['device_id']
-            email = request.data['email']
-            password = request.data['password']
+            deviceId = request.data.get('device_id')
+            email = request.data.get('email')
+            password = request.data.get('password')
             if request.POST.get('deviceType') is not None:
                 deviceType = request.data['deviceType']
             else:
@@ -71,7 +72,6 @@ def AdminLogin(request):
             if email is None or email == "Null" or email == "null":
                 email = deviceId+"@couponboss.com"
             username = deviceId
-
             print(deviceId)
             nowTime = datetime.now()            
             try:
@@ -81,24 +81,27 @@ def AdminLogin(request):
                 existedUser = None
             if existedUser is not None:
                 authUser = authenticate(username=email, password=password)
-                print(authUser,"aaaaa")
-                checkGroup = authUser.groups.filter(name='Admin').exists()
-                if checkGroup:
-                    token = ''                    
-                    try:
-                        user_with_token = Token.objects.get(user=authUser)
-                    except:
-                        user_with_token = None
-                    if user_with_token is None:
-                        token1 = Token.objects.create(user=authUser)
-                        token = token1.key
-                    else:
-                        Token.objects.get(user=authUser).delete()
-                        token1 = Token.objects.create(user=authUser)
-                        token = token1.key 
-                    serialized_data = UserSerializer(existedUser)
-                    userDetail = {'token':token, 'user': serialized_data.data }
-                    return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail}, status=status.HTTP_200_OK)
+                if authUser is not None:
+                    checkGroup = authUser.groups.filter(name='Admin').exists()
+                    if checkGroup:
+                        token = ''                    
+                        try:
+                            user_with_token = Token.objects.get(user=authUser)
+                        except:
+                            user_with_token = None
+                        if user_with_token is None:
+                            token1 = Token.objects.create(user=authUser)
+                            token = token1.key
+                        else:
+                            Token.objects.get(user=authUser).delete()
+                            token1 = Token.objects.create(user=authUser)
+                            token = token1.key 
+                        serialized_data = UserSerializer(existedUser)
+                        userDetail = {'token':token, 'user': serialized_data.data }
+                        return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail}, status=status.HTTP_200_OK)
+
+                else:
+                        return Response({"status" : "1", 'message':'Email Or Password is Wrong.'}, status=status.HTTP_400_BAD_REQUEST)
             else:
             	return Response({"status" : "1", 'message':'Please Register Your Account.'}, status=status.HTTP_200_OK)
                                
@@ -339,9 +342,11 @@ def Add_Brands(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            if len(request.data['country']) > 0 :                
+            
+            if len(request.data['country']) > 0 : 
+                              
                 brand_detail=Brands.objects.create(name = request.data['name'],
-                                                # image = request.data['logo'],
+                                                image = request.data['logo'],
                                                 url = request.data['website_url'])
                 for ctry in request.data['country']:
                     country = Country.objects.filter(id=ctry).first()
@@ -542,6 +547,52 @@ def Get_Countries(request):
             countries_list = Country.objects.filter()
             country_serializer = CountrySerializer(countries_list, many = True)
             return Response({"message" : addSuccessMessage, "response" : country_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+
+
+            #else:
+            #    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+def GetBrands(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            brand_list = Brands.objects.all()
+            brand_serializer = BrandSerializer(brand_list, many=True)
+            obj = brand_serializer.data
+
+            # Added Brands Countries in List 
+            for index, data in  enumerate(obj):
+                brand_country = BrandCountries.objects.filter(brand_id=data['id'])
+                country_ids = brand_country.values_list('country_id', flat=True)
+                countries = Country.objects.filter(id__in = country_ids)
+                selected_country = CountrySerializer(countries, many=True)
+                obj[index]['brand_countries'] = selected_country.data
+
+
+            # Added Brands Coupons in List 
+            for index, data in  enumerate(obj):
+                brand_coupon = Coupon.objects.filter(brand_id=data['id'])
+                brand_coupons = CouponSerializer(brand_coupon, many=True)
+                obj[index]['brand_coupons'] = brand_coupons.data
+
+
+            return Response({"message" : addSuccessMessage, "response" : obj, "status" : "1"}, status=status.HTTP_200_OK)
 
 
             #else:

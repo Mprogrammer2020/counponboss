@@ -50,8 +50,39 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
+
+CORS_ORIGIN_WHITELIST = (
+    'localhost:4200','192.168.2.91:4200','localhost:4200',
+)
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+)
+
+CORS_ALLOW_HEADERS = (
+    'accept',
+    # 'accept-encoding',
+    'authorization',
+    'content-type',
+    # 'dnt',
+    'origin',
+    'access-control-allow-origin',
+    # 'user-agent',
+    # 'x-csrftoken',
+    # 'x-requested-with',
+    # 'timeZone'
+)
+CORS_ORIGIN_ALLOW_ALL = True
+
+CSRF_COOKIE_SECURE = False
 ROOT_URLCONF = 'CouponBoss.urls'
 
 TEMPLATES = [

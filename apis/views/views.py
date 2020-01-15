@@ -558,7 +558,7 @@ def Is_Coupon_Useful(request):
             else:
                 coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 0)
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
-            
+
 
     except Exception as e:
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
