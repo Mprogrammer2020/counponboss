@@ -41,9 +41,10 @@ urlpatterns = [
     path('apis/get_coupon_request', api_views.Get_Coupon_request, name='Get_Coupon_request'),
     path('apis/delete_brand', api_views.Delete_Brand, name='Delete_Brand'),
     path('apis/dashboard', api_views.Dashboard, name='Dashboard'),
-    path('apis/countactus', api_views.Contact_us, name='Contact_us'),
+    path('apis/countactuslist', api_views.Contact_usList, name='Contact_usList'),
     path('apis/sendnotification', api_views.SendNotification, name='SendNotification'),
     path('apis/getbrands', api_views.GetBrands, name='GetBrands'),
+    path('apis/getusers', api_views.GetUsers, name='GetUsers'),
 
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),

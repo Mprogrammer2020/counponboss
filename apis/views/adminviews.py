@@ -386,7 +386,7 @@ def Edit_Brands(request):
             if brand is not None:
                 if len(request.data['country']) > 0 :
                     brand_detail=Brands.objects.filter(id=brandId).update(name = request.data['name'],
-                                                    # image = request.data['logo'],
+                                                    image = request.data['logo'],
                                                     url = request.data['website_url'])
                     delete_brand_countries = BrandCountries.objects.filter(brand_id__in=brand).delete()
                     for ctry in request.data['country']:
@@ -418,22 +418,22 @@ def Show_Brand(request):
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
                 country_added = 0
-                brandId = request.data['brandId']
+                brandId = request.data.get('brandId')
                 check_group = user.groups.filter(name='Admin').exists()
                 if check_group == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-           
             brand = Brands.objects.get(id=brandId)
             if brand is not None:
                 brand_country = BrandCountries.objects.filter(brand_id=brandId)
                 country_ids = brand_country.values_list('country_id', flat=True)
                 countries = Country.objects.filter(id__in = country_ids)
+                countries_ids = countries.values_list('id', flat=True)
                 selected_country = CountrySerializer(countries, many=True)
                 brand_detail = BrandSerializer(brand)
-                return Response({"message" : addSuccessMessage, "status" : "1", "brand": brand_detail.data, "brands_country": selected_country.data}, status=status.HTTP_201_CREATED)
+                return Response({"message" : addSuccessMessage, "status" : "1", "brand": brand_detail.data, "brands_country": countries_ids}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Brand Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -556,6 +556,33 @@ def Get_Countries(request):
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
+@api_view(['GET'])
+def GetUsers(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            usergroups = Group.objects.filter(name='User')
+            users = usergroups.values_list('user', flat=True)
+            users_list = User.objects.filter(id__in = users)
+            users_serializer = UserSerializer(users_list, many = True)
+            return Response({"message" : addSuccessMessage, "response" : users_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)        
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 @api_view(['GET'])
 def GetBrands(request):
     try:
@@ -663,9 +690,12 @@ def Dashboard(request):
             
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
+                print(user)
                 check_group = user.groups.filter(name='Admin').exists()
+                print(check_group)
                 if check_group == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
@@ -681,10 +711,9 @@ def Dashboard(request):
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(['GET'])
-def Contact_us(request):
+def Contact_usList(request):
     try:
-        with transaction.atomic():
-            
+        with transaction.atomic():            
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
@@ -727,43 +756,58 @@ def SendNotification(request):
             description=request.data['description']
             description_ar = request.data['description_ar']
             userId=request.data['userId']
-            if request.data['image'] is None:
-                image = None
-            else:
-                image=request.data['image']
 
-            if request.data['brandId'] == 0:
+            if request.data['brandId'] == 0 or request.data['brandId'] == "":
                 brandId = None
                 brand = None
             else:            
                 brandId=request.data['brandId']
                 brand = Brands.objects.get(id=brandId)
-            if request.data['countryId'] == 0:
+            if request.data['countryId'] == 0 or request.data['countryId'] == "":
                 countryId = None
                 country = None
             else:         
                 countryId=request.data['countryId']      
                 country = Country.objects.get(id=countryId)
-            user = User.objects.get(id=userId)
 
-            user_json = UserSerializer(user)
-            if user_json.data["on_off_notification"]:
-                # Notification Created
-                notifify = Notification.objects.create(title=title, discription=description, image= image, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar)
-                notifify_json = NotificationSerializer(notifify, many=True)
+            idsArray = []
+
+            ## find brands exists in country
+            brand_countries_exist = BrandCountries.objects.filter(brand_id=brandId, country_id=countryId )
+            if brand_countries_exist.count() > 0:
+                for user in request.data['userId']:
+                    user = User.objects.get(id=user)
+                    idList = user.device_id
+                    idsArray.append(idList)
+                    user_json = UserSerializer(user)
+                    if user and  user_json.data["on_off_notification"]:
+                        # Notification Created
+                        notifify = Notification.objects.create(title=title, discription=description, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar)
+
+                        if request.data.get('image') is not None:
+                            notifify.image= request.data.get('image')               
+                            notifify.save(update_fields=['image'])
+
                 
                 #Send Fcm Notification
-                push_service = FCMNotification(api_key=fcm_api_key)
-                registration_id = user_json.data["device_id"]
-                message_title = title
-                message_body = description
-                result = push_service.notify_single_device(registration_id=registration_id, message_title=message_title, message_body=message_body)
+                if idsArray.__len__() > 0:
+                    push_service = FCMNotification(api_key=fcm_api_key)
+                    registration_ids = idsArray
 
-                # print(result)
+                    data_message = {
+                            "message_title" :title ,
+                            "message_body" : description,
+                           
+                        }
+                    
+                    result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
 
-                return Response({"Message": "Notification Send Successfully.","notification" : notifify_json.data,"status" : "1"}, status=status.HTTP_200_OK)   
+                    # print(result)
+                    return Response({"Message": "Notification Send Successfully.", "status" : "1"}, status=status.HTTP_200_OK)
+                else:   
+                    return Response({"Message": "Something Occur.", "status" : "0"}, status=status.HTTP_400_BAD_REQUEST)
             else:
-                return Response({"message" : "Push Notification is off for that User.", "status" : "1"}, status=status.HTTP_200_OK)
+                return Response({"Message": "Brand is not present in the given country.", "status" : "1"}, status=status.HTTP_400_BAD_REQUEST)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -816,3 +860,25 @@ def Change_Admin_Password(request):
 
     except Exception as e:
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+ 
+@api_view(['POST'])
+def sendResponse(request):
+    try:
+        with transaction.atomic():            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+            return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
