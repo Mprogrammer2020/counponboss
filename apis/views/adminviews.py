@@ -49,6 +49,7 @@ from django.http.response import JsonResponse, HttpResponse
 import pdb;
 from commons.constants import *
 from pyfcm import FCMNotification
+from django.core.mail import BadHeaderError, send_mail
 
 
 errorMessage = "Sorry! Something went wrong."
@@ -877,8 +878,15 @@ def sendResponse(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
-
-            return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)          
+            subject = 'Response From Admin'
+            response = request.POST.get('response')
+            to_email = request.POST.get('email')
+            from_email = user.email
+            try:
+                send_mail(subject, response, from_email, [to_email])
+                return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)          
+            except BadHeaderError:
+                return HttpResponse('Invalid header found.')
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

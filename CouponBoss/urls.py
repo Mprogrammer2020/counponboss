@@ -45,6 +45,7 @@ urlpatterns = [
     path('apis/sendnotification', api_views.SendNotification, name='SendNotification'),
     path('apis/getbrands', api_views.GetBrands, name='GetBrands'),
     path('apis/getusers', api_views.GetUsers, name='GetUsers'),
+    path('apis/sendresponse', api_views.sendResponse, name='sendResponse'),
 
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),
