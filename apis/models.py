@@ -132,7 +132,6 @@ class Coupon(models.Model):
     
     id = models.BigAutoField(primary_key=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
-    country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(default='')
     description_ar = models.TextField(default='') 
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
@@ -190,4 +189,14 @@ class UserSelectedBrands(models.Model):
         verbose_name = _('user_selected_brands')
         verbose_name_plural = _('user_selected_brands')
         db_table = 'user_selected_brands'
+
+class CouponCountries(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE)
+    
+    class Meta:
+        verbose_name = _('coupon_countries')
+        verbose_name_plural = _('coupon_countries')
+        db_table = "coupon_countries"
     

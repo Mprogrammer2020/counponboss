@@ -509,7 +509,7 @@ def Shop_Now(request):
 
 
 @api_view(['GET'])
-def Code_Worked(request):
+def Popup_Code_Worked(request):
     try:
         with transaction.atomic():
             try:
@@ -523,14 +523,13 @@ def Code_Worked(request):
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
             
-            couponId = request.GET['coupon']
-            coup = Coupon.objects.get(id = couponId)
-            dataList = {
-                        "image":coup.image,
-                        "code":coup.code
-                        }
+            popup_list = UserCouponLogs.objects.filter(is_used = 0)
+            if popup_list is not None:
+                coupon_serializer = UserCouponLogsSerializer(popup_list, many = True)
 
-            return Response({ 'data': dataList ,"status" : "1"}, status=status.HTTP_200_OK)
+                return Response({"message" : addSuccessMessage, "response" : coupon_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
     except Exception as e:
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

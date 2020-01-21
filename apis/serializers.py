@@ -53,4 +53,10 @@ class UserSelectedBrandsSerializer(serializers.ModelSerializer):
         model = UserSelectedBrands
         fields =('__all__')
 
+class CouponCountriesSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = CouponCountries
+        fields =('__all__')
+
         

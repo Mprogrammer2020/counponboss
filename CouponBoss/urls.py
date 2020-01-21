@@ -19,6 +19,7 @@ from django.conf import settings
 from apis import views as api_views
 from apis.views import adminviews as AdminViews
 from django.conf.urls import include, url
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Admin Uls
@@ -61,6 +62,6 @@ urlpatterns = [
     path('apis/request_coupon',api_views.Request_Coupon, name='Request_Coupon'),
     path('apis/contact_us',api_views.Contact_Us, name='Contact_Us'),
     path('apis/shop_now',api_views.Shop_Now, name='Shop_Now'),
-    path('apis/code_worked',api_views.Code_Worked, name='Code_Worked'),
+    path('apis/popup_code_worked',api_views.Popup_Code_Worked, name='Popup_Code_Worked'),
     path('apis/is_coupon_useful',api_views.Is_Coupon_Useful, name='Is_Coupon_Useful'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
