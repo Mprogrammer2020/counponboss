@@ -195,7 +195,7 @@ def Get_Admin_Profile(request):
                         "email":user.email
 
                         }
-                    return Response({"status": "1", 'message': 'Get successfully.', 'data':dataList}, status=status.HTTP_200_OK)
+                    return Response({"status": "1", 'message': 'Get successfully.', 'response':dataList}, status=status.HTTP_200_OK)
 
                 else:
                     return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -214,7 +214,7 @@ def Get_Admin_Profile(request):
 def Add_Coupon(request):
     try:
         with transaction.atomic():
-            received_json_data = json.loads(request.data['data'], strict=False)
+            #received_json_data = json.loads(request.data['data'], strict=False)
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
@@ -226,26 +226,26 @@ def Add_Coupon(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            coupon_detail=Coupon.objects.create(headline = received_json_data['headline'],
-                                                        code = received_json_data['code'],
-                                                        discount = received_json_data['discount'],
-                                                        description = received_json_data['description'],
-                                                        brand_id = received_json_data['brand'],
-                                                        video_link = received_json_data['video_link'],
+            coupon_detail=Coupon.objects.create(headline = request.data['headline'],
+                                                        code = request.data['code'],
+                                                        discount = request.data['discount'],
+                                                        description = request.data['description'],
+                                                        brand_id = request.data['brand'],
+                                                        video_link = request.data['video_link'],
                                                         status = 1,
-                                                        is_featured=received_json_data['is_featured']
+                                                        is_featured=request.data['is_featured']
                                                         # headline_ar = request.data['headline_ar'],
                                                         # description_ar = request.data['description_ar'],
                                                       )
 
             if coupon_detail is not None:      
-                file = request.FILES.get('image')
-                fs = FileSystemStorage()
-                filename = fs.save("couponimages/"+str(coupon_detail.id)+"/"+file.name, file)
-                uploaded_file_url = fs.url(filename)
-                Coupon.objects.filter(id = coupon_detail.id).update(image = uploaded_file_url)                                    
+                # file = request.FILES.get('image')
+                # fs = FileSystemStorage()
+                # filename = fs.save("couponimages/"+str(coupon_detail.id)+"/"+file.name, file)
+                # uploaded_file_url = fs.url(filename)
+                # Coupon.objects.filter(id = coupon_detail.id).update(image = uploaded_file_url)                                    
                 try:
-                    for elem in received_json_data['country']:
+                    for elem in request.data['country']:
                         cntry = Country.objects.filter(id=elem).first()
                         if cntry:
 
@@ -273,7 +273,7 @@ def Add_Coupon(request):
 def Edit_Coupon(request):
     try:
         with transaction.atomic():
-            received_json_data = json.loads(request.data['data'], strict=False)
+            #received_json_data = json.loads(request.data['data'], strict=False)
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
@@ -285,19 +285,18 @@ def Edit_Coupon(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            coupon_id = received_json_data['coupon_id']
+            coupon_id = request.data['coupon_id']
             coupon1 =  Coupon.objects.filter(id=coupon_id).exists()
             if coupon1:
                                 
-                coupon_update = Coupon.objects.filter(id = received_json_data['coupon_id']).update(headline = received_json_data['headline'],
-                                                        code = received_json_data['code'],
-                                                        discount = received_json_data['discount'],
-                                                        description = received_json_data['description'],
-                                                        image = image,
-                                                        brand_id = received_json_data['brand'],
-                                                        video_link = received_json_data['video_link'],
+                coupon_update = Coupon.objects.filter(id = request.data['coupon_id']).update(headline = request.data['headline'],
+                                                        code = request.data['code'],
+                                                        discount = request.data['discount'],
+                                                        description = request.data['description'],
+                                                        brand_id = request.data['brand'],
+                                                        video_link = request.data['video_link'],
                                                         status = 1,
-                                                        is_featured = received_json_data['is_featured']
+                                                        is_featured = request.data['is_featured']
                                                         # headline_ar = request.data['headline_ar'],
                                                         # description_ar = request.data['description_ar'],
                                                         )
@@ -309,7 +308,7 @@ def Edit_Coupon(request):
                     uploaded_file_url = fs.url(filename)
                     Coupon.objects.filter(id = coupon_detail.id).update(image = uploaded_file_url)
                     try:
-                        for elem in received_json_data['country']:
+                        for elem in request.data['country']:
                             cntry = Country.objects.filter(id = elem).first()
                             cupn = Coupon.objects.get(id = received_json_data['coupon_id'])
 
@@ -434,7 +433,7 @@ def Add_Brands(request):
                     Brands.objects.filter(id = brand_detail.id).update(image = uploaded_file_url)
 
                     try:
-                        for ctry in request.data['country']:
+                        for ctry in json.loads(request.data['country']):
                             country = Country.objects.filter(id=ctry).first()
                             if country:
 
@@ -603,15 +602,15 @@ def Add_Country(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
-            country_detail=Country.objects.create(name = request.data['country_name'],
-                                                    latitude = request.data['lat'],
-                                                    longitude = request.data['long'],
-                                                    status = 1
+            country_detail=Country.objects.create(name = request.data['name']
+                                                    #latitude = request.data['lat'],
+                                                    #longitude = request.data['long']
                                                       )
             if country_detail is not None:
                 file = request.FILES.get('image')
+                print(file)
                 fs = FileSystemStorage()
-                filename = fs.save("brandimages/"+str(country_detail.id)+"/"+file.name, file)
+                filename = fs.save("countryimages/"+str(country_detail.id)+"/"+file.name, file)
                 uploaded_file_url = fs.url(filename)
                 Country.objects.filter(id = country_detail.id).update(image = uploaded_file_url)
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
@@ -841,7 +840,7 @@ def Dashboard(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            total_coupons = Coupon.objects.all().count()
+            total_coupons = Coupon.objects.all().filter(status=1).count()
             total_used_copons = UserCouponLogs.objects.filter(is_used=1).count()
 
             return Response({"total_coupons" : total_coupons, "total_used_copons" : total_used_copons,"status" : "1"}, status=status.HTTP_200_OK)          
@@ -967,14 +966,17 @@ def SendNotification(request):
 def Change_Admin_Password(request):
     try:
         with transaction.atomic():
-
+            print("hghds")
             API_key = request.META.get('HTTP_AUTHORIZATION')
             if API_key is not None:
+                print(API_Key)
                 try:
                     token1 = Token.objects.get(key=API_key)
+                    print(token1)
                     user = token1.user
-
+                    print(user)
                     checkGroup = user.groups.filter(name='Admin').exists()
+                    print(checkGroup)
                 except:
                     return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
                 if checkGroup:
@@ -1029,6 +1031,42 @@ def sendResponse(request):
 
 
             return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+############################################################
+#     Show Brands
+############################################################
+
+@api_view(['POST'])
+def Det_Cop(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                couponId = request.data.get('couponId')
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            print(couponId)
+            coup = Coupon.objects.get(id=couponId)
+            if coup is not None:
+                coupon_country = CouponCountries.objects.filter(coupon_id=couponId)
+                country_ids = coupon_country.values_list('country_id', flat=True)
+                countries = Country.objects.filter(id__in = country_ids)
+                countries_ids = countries.values_list('id', flat=True)
+                selected_country = CountrySerializer(countries, many=True)
+                coupon_detail = CouponSerializer(coup)
+                return Response({"message" : addSuccessMessage, "status" : "1", "coup": coupon_detail.data, "coupon_country": countries_ids}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : "Coupon Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

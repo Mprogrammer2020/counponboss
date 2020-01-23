@@ -10,7 +10,7 @@ class Country(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100,blank=True)
     image = models.CharField(max_length=250,blank=True)
-    status = models.IntegerField(default=0)
+    status = models.IntegerField(default=1)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     class Meta:
@@ -23,7 +23,7 @@ class Brands(models.Model):
     name = models.CharField(max_length=100,blank=True)
     image = models.CharField(max_length=255,blank=True)
     url = models.CharField(max_length=255, blank=True, null=True)
-    status = models.IntegerField(default=0)
+    status = models.IntegerField(default=1)
     
     class Meta:
         verbose_name = _('brands')
@@ -35,6 +35,7 @@ class BrandCountries(models.Model):
     id = models.BigAutoField(primary_key=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    status = models.IntegerField(default=1)
     
     class Meta:
         verbose_name = _('brand_countries')
@@ -139,7 +140,7 @@ class Coupon(models.Model):
     video_link = models.CharField(max_length=255, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
     image = models.CharField(max_length=255, blank=True, null=True)
-    status = models.IntegerField(default=0)
+    status = models.IntegerField(default=1)
     headline = models.CharField(max_length=50, blank=True, null=True)
     headline_ar = models.CharField(max_length=50, blank=True, null=True)
     created_time = models.DateTimeField()
@@ -183,6 +184,7 @@ class UserSelectedBrands(models.Model):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    status = models.IntegerField(default=1)
     
     
     class Meta:
@@ -194,6 +196,7 @@ class CouponCountries(models.Model):
     id = models.BigAutoField(primary_key=True)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
     coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE)
+    status = models.IntegerField(default=1)
     
     class Meta:
         verbose_name = _('coupon_countries')

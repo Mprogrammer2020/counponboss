@@ -168,7 +168,10 @@ def UserRegister(request):
                 if existedUser is not None:
                     return Response({"status" : "1", 'message':'User Already Registered'}, status=status.HTTP_200_OK)
                 else:
-                    country = Country.objects.get(id=countryId)
+                    try:
+                        country = Country.objects.get(id=countryId,status=1)
+                    except:
+                        return Response({"status" : "0", 'message':'Invalid Country'}, status=status.HTTP_404_NOT_FOUND)
                     authUser = User.objects.create(username=email,
                                              email=email,
                                              first_name='firstname',
@@ -221,10 +224,16 @@ def CouponDetails(request, id):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             couponId = id
-            coupon = Coupon.objects.filter(id=couponId)
-            if coupon.count()>0:
-                coupon_detail = CouponSerializer(coupon.first())
-                return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
+            coupon = Coupon.objects.get(id=couponId, status=1)
+            if coupon is not None:
+                #coupon_detail = CouponSerializer(coupon.first())
+                coupon_country = CouponCountries.objects.filter(coupon_id=couponId)
+                country_ids = coupon_country.values_list('country_id', flat=True)
+                countries = Country.objects.filter(id__in = country_ids)
+                countries_ids = countries.values_list('id', flat=True)
+                selected_country = CountrySerializer(countries, many=True)
+                coupon_detail = CouponSerializer(coupon)
+                return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data,"coupon_country": countries_ids}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Coupon Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -255,10 +264,11 @@ def filter(request):
                 else:
                     result.language_code= language_code               
                     result.save(update_fields=['language_code'])
-
-                country = Country.objects.filter(id=countryId)
-                coupons = Coupon.objects.filter(country_id__in=country)
-                if coupons is not None:
+                country = Country.objects.filter(id=countryId, status=1)
+                coupons_data = CouponCountries.objects.filter(country_id__in=country)
+                if coupons_data is not None:
+                    coupons_id = coupons_data.values_list('coupon_id', flat=True)
+                    coupons = Coupon.objects.filter(id__in=coupons_id, status=1)
                     coupon_detail = CouponSerializer(coupons, many=True)
                     return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
                 else:
@@ -355,7 +365,7 @@ def Home(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            featuredcoupons = Coupon.objects.filter(is_featured= True)
+            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
 
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id)
@@ -364,9 +374,10 @@ def Home(request):
             usedbrandsjson = BrandSerializer(brands, many=True)
 
             brandslist = Brands.objects.all()
-            brandsjson = BrandSerializer(brands, many=True)
+            print(brandslist)
+            brandsjson = BrandSerializer(brandslist, many=True)
 
-            coupons = Coupon.objects.all()
+            coupons = Coupon.objects.filter(status=1)
             couponsjson = CouponSerializer(coupons, many=True)
 
             return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist": brandsjson.data, "couponslist": couponsjson.data}, status=status.HTTP_201_CREATED)
@@ -380,7 +391,7 @@ def Countries_List(request):
     try:
         with transaction.atomic():
             
-            countries_list = Country.objects.filter()
+            countries_list = Country.objects.filter(status=1)
             country_serializer = CountrySerializer(countries_list, many = True)
             return Response({"message" : addSuccessMessage, "response" : country_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
 
@@ -394,7 +405,7 @@ def Brands_List(request):
     try:
         with transaction.atomic():
             
-            brand_list = Brands.objects.filter()
+            brand_list = Brands.objects.filter(status=1)
             brand_serializer = BrandSerializer(brand_list, many = True)
             return Response({"message" : addSuccessMessage, "response" : brand_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
 
@@ -556,7 +567,7 @@ def Is_Coupon_Useful(request):
                 coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 2)
             else:
                 coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 0)
-                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
 
 
     except Exception as e:
