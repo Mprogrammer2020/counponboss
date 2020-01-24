@@ -564,13 +564,17 @@ def Is_Coupon_Useful(request):
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
             couponId = request.data['coupon_id']
-            if request.data['useful'] == "Yes":
-                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 1)
-            elif request.data['useful'] == "No":
-                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 2)
+            coupon_exist = UserCouponLogs.objects.filter(coupon_id = couponId).exists()
+            if coupon_exist:
+                if request.data['useful'] == "Yes":
+                    coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 1)
+                elif request.data['useful'] == "No":
+                    coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 2)
+                else:
+                    coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 0)
+                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
-                coupLog = UserCouponLogs.objects.filter(coupon_id = couponId).update(is_used = 0)
-            return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "not found", "status" : "1"}, status=status.HTTP_404_NOT_FOUND)
 
 
     except Exception as e:

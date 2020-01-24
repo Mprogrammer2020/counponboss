@@ -80,9 +80,9 @@ def AdminLogin(request):
                 email = deviceId+"@couponboss.com"
             username = deviceId
             print(deviceId)
-            nowTime = datetime.now()            
+            nowTime = datetime.now()       
             try:
-                existedUser = User.objects.get(device_id =deviceId)
+                existedUser = User.objects.get(email =email)
                 print(existedUser)
             except:
                 existedUser = None
@@ -187,18 +187,16 @@ def Get_Admin_Profile(request):
                     return Response({"message": "Session expired!! please login again", "status": "0"},
                                     status=status.HTTP_401_UNAUTHORIZED)
                 if checkGroup:
-                    user = User.objects.get(id=user.id)
-
-                    dataList = {
-                        "firstName":user.first_name,
-                        "lastName":user.last_name,
-                        "email":user.email
-
-                        }
-                    return Response({"status": "1", 'message': 'Get successfully.', 'response':dataList}, status=status.HTTP_200_OK)
-
+                    user = User.objects.filter(id=user.id)
+                    if user is not None:
+                        user_serializer = UserSerializer(user, many = True)
+                        return Response({"message" : addSuccessMessage, "response" : user_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+                    else:
+                        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
                 else:
-                    return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
+                    return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+                    
+                    
             else:
                 return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -353,14 +351,33 @@ def Get_Coupons(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            coupons_list = Coupon.objects.filter(status=1)
-            if coupons_list is not None:
-                coupon_serializer = CouponSerializer(coupons_list, many = True).data
-                for c in coupon_serializer:
-                    couponCountries = CouponCountries.objects.filter(coupon_id = c['id'])
-                    couponCountriesSerializer = CouponCountriesSerializer(couponCountries, many=True).data
-                    c['countries'] = couponCountriesSerializer
-                return Response({"message" : addSuccessMessage, "response" : coupon_serializer, "status" : "1"}, status=status.HTTP_200_OK)
+            # coupons_list = Coupon.objects.filter(status=1)
+            # if coupons_list is not None:
+            #     coupon_serializer = CouponSerializer(coupons_list, many = True).data
+            #     for c in coupon_serializer:
+            #         couponCountries = CouponCountries.objects.filter(coupon_id = c['id'])
+            #         couponCountriesSerializer = CouponCountriesSerializer(couponCountries, many=True).data
+            #         c['countries'] = couponCountriesSerializer
+            coupon_list = Coupon.objects.filter(status=1)
+            if coupon_list is not None:
+                coupon_serializer = CouponSerializer(coupon_list, many=True)
+                coup = coupon_serializer.data
+
+                # Added coupon Countries in List 
+                for index, data in  enumerate(coup):
+                    coupon_country = CouponCountries.objects.filter(coupon_id=data['id'])
+                    country_ids = coupon_country.values_list('country_id', flat=True)
+                    countries = Country.objects.filter(id__in = country_ids)
+                    selected_country = CountrySerializer(countries, many=True)
+                    coup[index]['coupon_countries'] = selected_country.data
+
+                for index, data in  enumerate(coup):
+                    coupon_brand = Brands.objects.filter(id=data['brand'])
+                    print(coupon_brand)
+                    brand = BrandSerializer(coupon_brand, many=True)
+                    coup[index]['brand'] = brand.data
+
+                return Response({"message" : addSuccessMessage, "response" : coup, "status" : "1"}, status=status.HTTP_200_OK)
 
             else:
                return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
@@ -427,7 +444,7 @@ def Add_Brands(request):
                 if brand_detail is not None:
 
                     try:
-                        for ctry in json.loads(request.data['country']):
+                        for ctry in request.data['country']:
                             country = Country.objects.filter(id=ctry).first()
                             if country:
 
@@ -489,7 +506,7 @@ def Edit_Brands(request):
                             print(traceback.format_exc())
 
                             return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                        return Response({"message" : editSuccessMessage, "status" : "1", "brand": brand_detail}, status=status.HTTP_201_CREATED)
+                        return Response({"message" : editSuccessMessage, "status" : "1", "brand": brandId}, status=status.HTTP_201_CREATED)
                     else:
                         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
                 else:
@@ -953,35 +970,39 @@ def SendNotification(request):
 def Change_Admin_Password(request):
     try:
         with transaction.atomic():
-            print("hghds")
             API_key = request.META.get('HTTP_AUTHORIZATION')
             if API_key is not None:
-                print(API_Key)
                 try:
                     token1 = Token.objects.get(key=API_key)
-                    print(token1)
+                    print(token1,"token")
                     user = token1.user
-                    print(user)
+                    print(user,"user")
                     checkGroup = user.groups.filter(name='Admin').exists()
-                    print(checkGroup)
+                    print(checkGroup,"checkGroup")
                 except:
                     return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
                 if checkGroup:
                     user1 = User.objects.get(id=user.id)
 
-                    currentPassword = request.data['oldPassword']
+                    currentPassword = request.data['currentPassword']
+                    print(currentPassword,"currentPassword")
                     newPassword = request.data['newPassword']
+                    print(newPassword,"newPassword")
                     confirmPassword = request.data['confirmPassword']
+                    print(confirmPassword,"confirmPassword")
 
                     success = user.check_password(str(currentPassword))
+                    print(success,"hfgdjhkfg")
                     if success:
                         if currentPassword == newPassword:
-                            return Response({"message": "Please Enter a Different Password", "status": "0"},status=status.HTTP_406_NOT_ACCEPTABLE)
+                            return Response({"message": "Please Enter a Different new Password", "status": "0"},status=status.HTTP_406_NOT_ACCEPTABLE)
                         else:
                             u = User.objects.get(id=user.id)
+                            print(u,"user")
                             if newPassword == confirmPassword:
                                 u.set_password(newPassword)
                                 result = User.objects.filter(id=user.id).update(password = make_password(newPassword))
+                                print(result,"resulttttt")
                                 if result:
                                     return Response({"status": "1", "message": "Password changed successfully!"},status=status.HTTP_200_OK)
                                 else:
@@ -1095,7 +1116,6 @@ def uploadfile(request):
                 if request.data.get('type') == "brand":
                     file = request.FILES.get('file')
                     fs = FileSystemStorage()
-                    pdb.set_trace()
                     filename = fs.save("brandimages/"+str(request_id)+"/"+file.name, file)
                     uploaded_file_url = fs.url(filename)
                     Brands.objects.filter(id = request_id).update(image = uploaded_file_url)
