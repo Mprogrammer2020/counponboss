@@ -48,7 +48,8 @@ urlpatterns = [
     path('apis/getusers', api_views.GetUsers, name='GetUsers'),
     path('apis/sendresponse', api_views.sendResponse, name='sendResponse'),
     path('apis/dc', api_views.Det_Cop, name='Det_Cop'),
-
+    path('apis/uploadfile', api_views.uploadfile, name='uploadfile'),
+    
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),
     path('apis/userlogin', api_views.UserLogin, name='UserLogin'),

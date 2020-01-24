@@ -225,7 +225,7 @@ def Add_Coupon(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            
+          
             coupon_detail=Coupon.objects.create(headline = request.data['headline'],
                                                         code = request.data['code'],
                                                         discount = request.data['discount'],
@@ -426,12 +426,6 @@ def Add_Brands(request):
                     
                 if brand_detail is not None:
 
-                    file = request.FILES.get('image')
-                    fs = FileSystemStorage()
-                    filename = fs.save("brandimages/"+str(brand_detail.id)+"/"+file.name, file)
-                    uploaded_file_url = fs.url(filename)
-                    Brands.objects.filter(id = brand_detail.id).update(image = uploaded_file_url)
-
                     try:
                         for ctry in json.loads(request.data['country']):
                             country = Country.objects.filter(id=ctry).first()
@@ -445,8 +439,7 @@ def Add_Brands(request):
                     except Exception:
                         print(traceback.format_exc())
                         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                
-                    return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+                    return Response({"message" : addSuccessMessage, "status" : "1", "brand":BrandSerializer(brand_detail).data['id']}, status=status.HTTP_201_CREATED)
                 else:
                     return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
@@ -459,7 +452,7 @@ def Add_Brands(request):
 ############################################################
 #     Edit Brands
 ############################################################
-
+import base64
 @api_view(['PUT'])
 def Edit_Brands(request):
     try:
@@ -482,14 +475,7 @@ def Edit_Brands(request):
                                                     url = request.data['website_url'])
 
                     if brand_detail is not None:
-
-                        file = request.FILES.get('image')
-                        fs = FileSystemStorage()
-                        filename = fs.save("brandimages/"+str(brand_detail.id)+"/"+file.name, file)
-                        uploaded_file_url = fs.url(filename)
-                        Brands.objects.filter(id = brand_detail.id).update(image = uploaded_file_url)
                         delete_brand_countries = BrandCountries.objects.filter(brand_id__in=brand).delete()
-
                         try:
                             for ctry in request.data['country']:
                                 country = Country.objects.filter(id=ctry).first()
@@ -501,8 +487,9 @@ def Edit_Brands(request):
                                     country_added = 1
                         except Exception:
                             print(traceback.format_exc())
+
                             return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-                        return Response({"message" : editSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+                        return Response({"message" : editSuccessMessage, "status" : "1", "brand": brand_detail}, status=status.HTTP_201_CREATED)
                     else:
                         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
                 else:
@@ -568,12 +555,18 @@ def Delete_Brand(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-           
-            brand = Brands.objects.get(id=brandId)
+            try:           
+                brand = Brands.objects.get(id=brandId)
+            except:
+                brand=None
 
             if brand is not None:
-                delete_brand_countries = BrandCountries.objects.filter(brand=brand).delete()
-                brand.delete()
+                # delete_brand_countries = BrandCountries.objects.filter(brand=brand).delete()
+                # brand.delete()
+                BrandCountries.objects.filter(brand=brand).update(status =0)
+                Coupon.objects.filter(brand=brand).update(status =0)
+                brand.status= 0            
+                brand.save(update_fields=['status'])
                 return Response({"message" : "Brand Deleted Successfully.", "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Brand Not Found", "status" : "1"}, status=status.HTTP_404_NOT_FOUND)
@@ -607,13 +600,7 @@ def Add_Country(request):
                                                     #longitude = request.data['long']
                                                       )
             if country_detail is not None:
-                file = request.FILES.get('image')
-                print(file)
-                fs = FileSystemStorage()
-                filename = fs.save("countryimages/"+str(country_detail.id)+"/"+file.name, file)
-                uploaded_file_url = fs.url(filename)
-                Country.objects.filter(id = country_detail.id).update(image = uploaded_file_url)
-                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+                return Response({"message" : addSuccessMessage, "status" : "1", "country": CountrySerializer(country_detail).data["id"]}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception:
@@ -731,7 +718,7 @@ def GetBrands(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            brand_list = Brands.objects.all()
+            brand_list = Brands.objects.filter(status = 1)
             brand_serializer = BrandSerializer(brand_list, many=True)
             obj = brand_serializer.data
 
@@ -739,14 +726,14 @@ def GetBrands(request):
             for index, data in  enumerate(obj):
                 brand_country = BrandCountries.objects.filter(brand_id=data['id'])
                 country_ids = brand_country.values_list('country_id', flat=True)
-                countries = Country.objects.filter(id__in = country_ids)
+                countries = Country.objects.filter(id__in = country_ids,status = 1 )
                 selected_country = CountrySerializer(countries, many=True)
                 obj[index]['brand_countries'] = selected_country.data
 
 
             # Added Brands Coupons in List 
             for index, data in  enumerate(obj):
-                brand_coupon = Coupon.objects.filter(brand_id=data['id'])
+                brand_coupon = Coupon.objects.filter(brand_id=data['id'], status=1)
                 brand_coupons = CouponSerializer(brand_coupon, many=True)
                 obj[index]['brand_coupons'] = brand_coupons.data
 
@@ -840,7 +827,7 @@ def Dashboard(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            total_coupons = Coupon.objects.all().filter(status=1).count()
+            total_coupons = Coupon.objects.filter(status=1).count()
             total_used_copons = UserCouponLogs.objects.filter(is_used=1).count()
 
             return Response({"total_coupons" : total_coupons, "total_used_copons" : total_used_copons,"status" : "1"}, status=status.HTTP_200_OK)          
@@ -1036,6 +1023,7 @@ def sendResponse(request):
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
+
 ############################################################
 #     Show Brands
 ############################################################
@@ -1056,17 +1044,70 @@ def Det_Cop(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             print(couponId)
-            coup = Coupon.objects.get(id=couponId)
+            try:
+                coup = Coupon.objects.get(id=couponId)
+            except:
+                coup=None
             if coup is not None:
+                coupon_detail = CouponSerializer(coup)
+                obj = coupon_detail.data
+                obj["coupon_brand"]= BrandSerializer(coup.brand).data
                 coupon_country = CouponCountries.objects.filter(coupon_id=couponId)
                 country_ids = coupon_country.values_list('country_id', flat=True)
                 countries = Country.objects.filter(id__in = country_ids)
                 countries_ids = countries.values_list('id', flat=True)
                 selected_country = CountrySerializer(countries, many=True)
-                coupon_detail = CouponSerializer(coup)
-                return Response({"message" : addSuccessMessage, "status" : "1", "coup": coupon_detail.data, "coupon_country": countries_ids}, status=status.HTTP_201_CREATED)
+
+                obj["useful_coupons"] = UserCouponLogs.objects.filter(coupon_id=couponId, is_used=1).count()
+                obj["notuseful_coupons"] = UserCouponLogs.objects.filter(coupon_id=couponId, is_used=2).count()
+                obj["total_used"] = obj["useful_coupons"]+obj["notuseful_coupons"] 
+
+                obj["coupon_countries"] = selected_country.data
+                return Response({"message" : addSuccessMessage, "status" : "1", "coupon": obj}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Coupon Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+@api_view(['POST'])
+def uploadfile(request):
+    try:
+        with transaction.atomic():  
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            try:
+                request_id = int(request.data.get('id'))
+            except:
+                request_id = None
+            if request_id is not None:
+                if request.data.get('type') == "brand":
+                    file = request.FILES.get('file')
+                    fs = FileSystemStorage()
+                    pdb.set_trace()
+                    filename = fs.save("brandimages/"+str(request_id)+"/"+file.name, file)
+                    uploaded_file_url = fs.url(filename)
+                    Brands.objects.filter(id = request_id).update(image = uploaded_file_url)
+                if request.data.get('type') == "country":
+                    file = request.FILES.get('file')
+                    fs = FileSystemStorage()
+                    filename = fs.save("countryimages/"+str(request_id)+"/"+file.name, file)
+                    uploaded_file_url = fs.url(filename)
+                    Country.objects.filter(id = request_id).update(image = uploaded_file_url)
+
+            return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)          
+
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

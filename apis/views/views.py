@@ -224,7 +224,10 @@ def CouponDetails(request, id):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             couponId = id
-            coupon = Coupon.objects.get(id=couponId, status=1)
+            try:
+                coupon = Coupon.objects.get(id=couponId, status=1)
+            except:
+                coupon = None
             if coupon is not None:
                 #coupon_detail = CouponSerializer(coupon.first())
                 coupon_country = CouponCountries.objects.filter(coupon_id=couponId)
