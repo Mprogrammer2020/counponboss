@@ -231,17 +231,13 @@ def Add_Coupon(request):
                                                         brand_id = request.data['brand'],
                                                         video_link = request.data['video_link'],
                                                         status = 1,
+                                                        store_link = request.data['store_link'],
                                                         is_featured=request.data['is_featured']
                                                         # headline_ar = request.data['headline_ar'],
                                                         # description_ar = request.data['description_ar'],
                                                       )
 
-            if coupon_detail is not None:      
-                # file = request.FILES.get('image')
-                # fs = FileSystemStorage()
-                # filename = fs.save("couponimages/"+str(coupon_detail.id)+"/"+file.name, file)
-                # uploaded_file_url = fs.url(filename)
-                # Coupon.objects.filter(id = coupon_detail.id).update(image = uploaded_file_url)                                    
+            if coupon_detail is not None:                                       
                 try:
                     for elem in request.data['country']:
                         cntry = Country.objects.filter(id=elem).first()
@@ -255,7 +251,7 @@ def Add_Coupon(request):
                     print(traceback.format_exc())
                     return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+                return Response({"message" : addSuccessMessage, "status" : "1", "coupon":CouponSerializer(coupon_detail).data['id']}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception:
@@ -294,21 +290,18 @@ def Edit_Coupon(request):
                                                         brand_id = request.data['brand'],
                                                         video_link = request.data['video_link'],
                                                         status = 1,
+                                                        store_link = request.data['store_link'],
                                                         is_featured = request.data['is_featured']
                                                         # headline_ar = request.data['headline_ar'],
                                                         # description_ar = request.data['description_ar'],
                                                         )
                 if coupon is not None:
                     delete_coupon_countries = CouponCountries.objects.filter(coupon_id=coupon_id).delete()
-                    file = request.FILES.get('image')
-                    fs = FileSystemStorage()
-                    filename = fs.save("couponimages/"+str(coupon_detail.id)+"/"+file.name, file)
-                    uploaded_file_url = fs.url(filename)
-                    Coupon.objects.filter(id = coupon_detail.id).update(image = uploaded_file_url)
+
                     try:
                         for elem in request.data['country']:
                             cntry = Country.objects.filter(id = elem).first()
-                            cupn = Coupon.objects.get(id = received_json_data['coupon_id'])
+                            cupn = Coupon.objects.get(id = coupon_id)
 
                             if cntry:
 
@@ -322,7 +315,7 @@ def Edit_Coupon(request):
                         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)    
                 
 
-                    return Response({"message" : editSuccessMessage , "status" : "1"}, status=status.HTTP_201_CREATED)
+                    return Response({"message" : editSuccessMessage , "status" : "1","coupon" : coupon_id}, status=status.HTTP_201_CREATED)
                 else:
                     return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
@@ -367,7 +360,7 @@ def Get_Coupons(request):
                 for index, data in  enumerate(coup):
                     coupon_country = CouponCountries.objects.filter(coupon_id=data['id'])
                     country_ids = coupon_country.values_list('country_id', flat=True)
-                    countries = Country.objects.filter(id__in = country_ids)
+                    countries = Country.objects.filter(id__in = country_ids , status=1)
                     selected_country = CountrySerializer(countries, many=True)
                     coup[index]['coupon_countries'] = selected_country.data
 
@@ -643,7 +636,9 @@ def Delete_Country(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             countryId=request.data['id']
-            del_cntry = Coupon.objects.filter(id = countryId,status=1).exists()
+            print(countryId,"hhhhhhh")
+            del_cntry = Country.objects.filter(id = countryId,status=1).exists()
+            print(del_cntry)
             if del_cntry :
                 dele=Country.objects.filter(id = countryId).update(status = 0)
                 return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
@@ -787,7 +782,14 @@ def Get_Coupon_request(request):
             requested_coupon_list = RequestCoupon.objects.filter()
             if requested_coupon_list is not None:
                 reqCoupon_serializer = RequestCouponSerializer(requested_coupon_list, many = True)
-                return Response({"message" : addSuccessMessage, "response" : reqCoupon_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+                req = reqCoupon_serializer.data
+
+                # Added coupon Countries in List 
+                for index, data in  enumerate(req):
+                    countries = Country.objects.filter(id = data['country'] , status=1)
+                    selected_country = CountrySerializer(countries, many=True)
+                    req[index]['country'] = selected_country.data
+                return Response({"message" : addSuccessMessage, "response" : req, "status" : "1"}, status=status.HTTP_200_OK)
 
             else:
                return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
@@ -1125,6 +1127,12 @@ def uploadfile(request):
                     filename = fs.save("countryimages/"+str(request_id)+"/"+file.name, file)
                     uploaded_file_url = fs.url(filename)
                     Country.objects.filter(id = request_id).update(image = uploaded_file_url)
+                if request.data.get('type') == "coupon":
+                    file = request.FILES.get('file')
+                    fs = FileSystemStorage()
+                    filename = fs.save("couponimages/"+str(request_id)+"/"+file.name, file)
+                    uploaded_file_url = fs.url(filename)
+                    Coupon.objects.filter(id = request_id).update(image = uploaded_file_url)
 
             return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)          
 
