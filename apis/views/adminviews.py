@@ -328,6 +328,41 @@ def Edit_Coupon(request):
 #     Get Coupons
 ############################################################
 
+
+def getCouponCountries(coup):
+    for index, data in  enumerate(coup):
+        coupon_country = CouponCountries.objects.filter(coupon_id=data['id'])
+        country_ids = coupon_country.values_list('country_id', flat=True)
+        countries = Country.objects.filter(id__in = country_ids , status=1)
+        selected_country = CountrySerializer(countries, many=True)
+        coup[index]['coupon_countries'] = selected_country.data
+
+def getCouponBrands(coup):
+    for index, data in  enumerate(coup):
+        coupon_brand = Brands.objects.filter(id=data['brand'], status=1)
+        print(coupon_brand)
+        brand = BrandSerializer(coupon_brand, many=True)
+        coup[index]['brand'] = brand.data
+
+
+def couponlist():
+    coupon_list = Coupon.objects.filter(status=1)
+    if coupon_list is not None:
+        coupon_serializer = CouponSerializer(coupon_list, many=True)
+        coup = coupon_serializer.data
+
+        # Added coupon Countries in List 
+        getCouponCountries(coup)
+
+        # Added coupon Brands in List 
+        getCouponBrands(coup)
+
+        return coup
+
+    else:
+       return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)  
+
+
 @api_view(['GET'])
 def Get_Coupons(request):
     try:
@@ -351,29 +386,78 @@ def Get_Coupons(request):
             #         couponCountries = CouponCountries.objects.filter(coupon_id = c['id'])
             #         couponCountriesSerializer = CouponCountriesSerializer(couponCountries, many=True).data
             #         c['countries'] = couponCountriesSerializer
-            coupon_list = Coupon.objects.filter(status=1)
-            if coupon_list is not None:
-                coupon_serializer = CouponSerializer(coupon_list, many=True)
-                coup = coupon_serializer.data
 
-                # Added coupon Countries in List 
-                for index, data in  enumerate(coup):
-                    coupon_country = CouponCountries.objects.filter(coupon_id=data['id'])
-                    country_ids = coupon_country.values_list('country_id', flat=True)
-                    countries = Country.objects.filter(id__in = country_ids , status=1)
-                    selected_country = CountrySerializer(countries, many=True)
-                    coup[index]['coupon_countries'] = selected_country.data
 
-                for index, data in  enumerate(coup):
-                    coupon_brand = Brands.objects.filter(id=data['brand'])
-                    print(coupon_brand)
-                    brand = BrandSerializer(coupon_brand, many=True)
-                    coup[index]['brand'] = brand.data
+            ################ Search Start ################
+            try:
+                search = request.GET.get('search')
+            except:
+                search = None
+            if search is not None:
+                try:
+                    data = json.loads(request.GET.get('data'), strict=False)
+                    print(data)
+                    if ((data['brand']=='') and ( data['country']!='')):
+                        coupon_list = Coupon.objects.filter(id__in = CouponCountries.objects.filter(country_id = data['country'], status=1).values_list('coupon_id', flat=True), status=1)
 
-                return Response({"message" : addSuccessMessage, "response" : coup, "status" : "1"}, status=status.HTTP_200_OK)
+                        if coupon_list is not None:
+                            coupon_serializer = CouponSerializer(coupon_list, many=True)
+                            coup = coupon_serializer.data
+
+                           # Added coupon Countries in List 
+                            getCouponCountries(coup)
+
+                            # Added coupon Brands in List 
+                            getCouponBrands(coup)
+                            return Response({"message" : addSuccessMessage, "response" : coup, "status" : "1"}, status=status.HTTP_200_OK)
+                        
+                        else:
+                            return Response({"message" : addSuccessMessage, "response" : [], "status" : "1"}, status=status.HTTP_200_OK)
+                    elif ((data['brand']!='') and ( data['country']=='')):
+                        coupon_list = Coupon.objects.filter(brand__in =  Brands.objects.filter(id = data['brand'], status=1) , status=1)
+
+                        if coupon_list is not None:
+                            coupon_serializer = CouponSerializer(coupon_list, many=True)
+                            coup = coupon_serializer.data
+
+                           # Added coupon Countries in List 
+                            getCouponCountries(coup)
+
+                            # Added coupon Brands in List 
+                            getCouponBrands(coup)
+                            return Response({"message" : addSuccessMessage, "response" : coup, "status" : "1"}, status=status.HTTP_200_OK)
+                        
+                        else:
+                            return Response({"message" : addSuccessMessage, "response" : [], "status" : "1"}, status=status.HTTP_200_OK)
+
+                    elif ((data['brand']!='') and ( data['country']!='')):
+                        coupon_list = Coupon.objects.filter(id__in = CouponCountries.objects.filter(country_id = data['country'], status=1).values_list('coupon_id', flat=True), brand__in =  Brands.objects.filter(id = data['brand'], status=1) , status=1)
+
+                        if coupon_list is not None:
+                            coupon_serializer = CouponSerializer(coupon_list, many=True)
+                            coup = coupon_serializer.data
+
+                           # Added coupon Countries in List 
+                            getCouponCountries(coup)
+
+                            # Added coupon Brands in List 
+                            getCouponBrands(coup)
+                            return Response({"message" : addSuccessMessage, "response" : coup, "status" : "1"}, status=status.HTTP_200_OK)
+                        
+                        else:
+                            return Response({"message" : addSuccessMessage, "response" : [], "status" : "1"}, status=status.HTTP_200_OK)
+                    else:
+                        print("blablablablablabla")
+                        coup = couponlist()  
+                        return Response({"message" : addSuccessMessage, "response" : coup, "status" : "1"}, status=status.HTTP_200_OK) 
+                except:
+                    return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            ################ End ################
 
             else:
-               return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
+                print("no blablablablablabla")
+                coup = couponlist()  
+                return Response({"message" : addSuccessMessage, "response" : coup, "status" : "1"}, status=status.HTTP_200_OK)     
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
