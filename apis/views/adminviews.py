@@ -1018,10 +1018,9 @@ def SendNotification(request):
                     if user and  user_json.data["on_off_notification"]:
                         # Notification Created
                         notifify = Notification.objects.create(title=title, discription=description, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar)
-
-                        if request.data.get('image') is not None:
-                            notifify.image= request.data.get('image')               
-                            notifify.save(update_fields=['image'])
+                        # if request.data.get('image') is not None:
+                        #     notifify.image= request.data.get('image')               
+                        #     notifify.save(update_fields=['image'])
 
                 
                 #Send Fcm Notification
@@ -1038,7 +1037,7 @@ def SendNotification(request):
                 #     result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
 
                     # print(result)
-                return Response({"Message": "Notification Send Successfully.", "status" : "1"}, status=status.HTTP_200_OK)
+                return Response({"Message": "Notification Send Successfully.", "notification": notifify.id,"status" : "1"}, status=status.HTTP_200_OK)
                 # else:   
                 #     return Response({"Message": "Something Occur.", "status" : "0"}, status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -1216,8 +1215,16 @@ def uploadfile(request):
                     filename = fs.save("couponimages/"+str(request_id)+"/"+file.name, file)
                     uploaded_file_url = fs.url(filename)
                     Coupon.objects.filter(id = request_id).update(image = uploaded_file_url)
+                if request.data.get('type') == "notifications":
+                    file = request.FILES.get('file')
+                    fs = FileSystemStorage()
+                    filename = fs.save("notificationimages/"+str(request_id)+"/"+file.name, file)
+                    uploaded_file_url = fs.url(filename)
+                    Notification.objects.filter(id = request_id).update(image = uploaded_file_url)
 
-            return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)          
+                return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)       
 
     except Exception:
         print(traceback.format_exc())
