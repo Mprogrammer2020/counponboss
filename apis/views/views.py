@@ -70,9 +70,9 @@ def UserLogin(request):
         with transaction.atomic():
 
             deviceId = request.data['device_id']
-            language_code = request.data.get('language_code')
-            countryId = request.data.get('countryId')
-            BrandId = request.data.get('BrandId')
+            # language_code = request.data.get('language_code')
+            # countryId = request.data.get('countryId')
+            # BrandId = request.data.get('BrandId')
             email = request.data.get('email')
 
             if request.POST.get('deviceType') is not None:
@@ -83,8 +83,8 @@ def UserLogin(request):
             if email is None or email == "Null" or email == "null":
                 email = deviceId+"@couponboss.com"
 
-            if language_code is None or email == "Null" or email == "null":
-                language_code = "en" 
+            # if language_code is None or email == "Null" or email == "null":
+            #     language_code = "en" 
 
             username = deviceId
             nowTime = datetime.now()            
@@ -99,19 +99,22 @@ def UserLogin(request):
 
                 if checkGroup:
                     filter_user =  User.objects.filter(device_id =deviceId)
-                    filter_user.update( language_code=language_code)
+
+                    user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
+                    user_brands_serialize = BrandSerializer(user_brands, many=True)
+                    # filter_user.update( language_code=language_code)
                     # Set User Brands During Login
                     # Deleted Current User Brands
-                    delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
+                    # delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
 
-                    # Added User Brands 
-                    for brandid in request.data['BrandId']:
-                        brand = Brands.objects.get(id=brandid)
-                        if brand:
-                            user_brands=UserSelectedBrands.objects.create(brand = brand,
-                                                    user = authUser
+                    # # Added User Brands 
+                    # for brandid in request.data['BrandId']:
+                    #     brand = Brands.objects.get(id=brandid)
+                    #     if brand:
+                    #         user_brands=UserSelectedBrands.objects.create(brand = brand,
+                    #                                 user = authUser
 
-                                                )
+                    #                             )
                     token = ''                    
                     try:
                         user_with_token = Token.objects.get(user=authUser)
@@ -126,7 +129,7 @@ def UserLogin(request):
                         token = token1.key 
                     serialized_data = UserSerializer(existedUser)
                     userDetail = {'token':token, 'user': serialized_data.data }
-                    return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail}, status=status.HTTP_200_OK)
+                    return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, 'user_brands': user_brands_serialize.data}, status=status.HTTP_200_OK)
             else:
             	return Response({"status" : "1", 'message':'Please Register Your Account.'}, status=status.HTTP_200_OK)
                                
