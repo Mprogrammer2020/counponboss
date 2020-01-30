@@ -8,8 +8,8 @@ import uuid
 
 class Country(models.Model):
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=100,blank=True)
-    image = models.CharField(max_length=250,blank=True)
+    name = models.CharField(max_length=100,default="")
+    image = models.CharField(max_length=250,default="")
     status = models.IntegerField(default=1)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)
@@ -18,11 +18,22 @@ class Country(models.Model):
         verbose_name_plural = _('countries')
         db_table = "countries"
 
+# class Banner(models.Model):
+#     id = models.BigAutoField(primary_key=True)
+#     name = models.CharField(max_length=100,blank=True)
+#     image = models.CharField(max_length=255,blank=True)
+#     status = models.IntegerField(default=1)
+    
+#     class Meta:
+#         verbose_name = _('banner')
+#         verbose_name_plural = _('banners')
+#         db_table = "banners"
+
 class Brands(models.Model):
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=100,blank=True)
-    image = models.CharField(max_length=255,blank=True)
-    url = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=100,default="")
+    image = models.CharField(max_length=255,default="")
+    url = models.CharField(max_length=255,default="")
     status = models.IntegerField(default=1)
     
     class Meta:
@@ -33,7 +44,7 @@ class Brands(models.Model):
 
 class BrandCountries(models.Model):
     id = models.BigAutoField(primary_key=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     status = models.IntegerField(default=1)
     
@@ -46,12 +57,12 @@ class User(AbstractUser):
     pass
     id = models.BigAutoField(primary_key=True)
     #phone_status = models.CharField(max_length=64, choices=PHONE_STATUS_CHOICES)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
     on_off_notification = models.BooleanField(max_length=64,default=True)
     last_login_time = models.DateTimeField()
-    device_type = models.CharField(max_length=10, blank=True, null=True)
-    device_id = models.CharField(max_length=255, blank=True, null=True)
-    device_uid = models.CharField(max_length=255, blank=True, null=True)
+    device_type = models.CharField(max_length=10, default="")
+    device_id = models.CharField(max_length=255, default="")
+    device_uid = models.CharField(max_length=255, default="")
     language_code = models.CharField(max_length=64, default='en')
     
     def save(self, *args, **kwargs):
@@ -70,7 +81,7 @@ class ContactUs(models.Model):
     id = models.BigAutoField(primary_key=True)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     email = models.EmailField(max_length=255)
-    subject = models.CharField(max_length=100, blank=True, null=True)
+    subject = models.CharField(max_length=100 ,default="")
     message = models.TextField(default='')
     created_time = models.DateTimeField()
     
@@ -87,11 +98,11 @@ class ContactUs(models.Model):
 class RequestCoupon(models.Model):
     
     id = models.BigAutoField(primary_key=True)
-    name = models.CharField(max_length=50, blank=True, null=True)
+    name = models.CharField(max_length=50, default="")
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
-    store_link = models.CharField(max_length=255, blank=True, null=True)
+    store_link = models.CharField(max_length=255,default="")
     email = models.EmailField(max_length=255)
     created_time = models.DateTimeField()
     
@@ -108,11 +119,11 @@ class RequestCoupon(models.Model):
 class Notification(models.Model):
     
     id = models.BigAutoField(primary_key=True)
-    title = models.CharField(max_length=150, blank=True)
-    title_ar = models.CharField(max_length=150, blank=True)
+    title = models.CharField(max_length=150, default="")
+    title_ar = models.CharField(max_length=150,default="")
     discription = models.TextField(default='')
     discription_ar = models.TextField(default='')
-    image = models.CharField(max_length=150, blank=True)
+    image = models.CharField(max_length=150, default="")
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
     receiver = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name="notification_receiver")
@@ -133,21 +144,22 @@ class Coupon(models.Model):
     
     id = models.BigAutoField(primary_key=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    #banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(default='')
     description_ar = models.TextField(default='') 
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    store_link = models.CharField(max_length=255, blank=True, null=True)
-    video_link = models.CharField(max_length=255, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-    image = models.CharField(max_length=255, blank=True, null=True)
+    store_link = models.CharField(max_length=255, default="")
+    video_link = models.CharField(max_length=255, default="")
+    code = models.CharField(max_length=50, default="")
+    image = models.CharField(max_length=255, default="")
     status = models.IntegerField(default=1)
-    headline = models.CharField(max_length=50, blank=True, null=True)
-    headline_ar = models.CharField(max_length=50, blank=True, null=True)
+    headline = models.CharField(max_length=50, default="")
+    headline_ar = models.CharField(max_length=50, default="")
     created_time = models.DateTimeField()
     updated_time = models.DateTimeField()
     no_of_users = models.IntegerField(default=0)
     last_usage_time = models.DateTimeField()
-    title = models.CharField(max_length=150, blank=True)    
+    title = models.CharField(max_length=150, default="")    
     is_featured = models.BooleanField(default=False)
     
     def save(self, *args, **kwargs):

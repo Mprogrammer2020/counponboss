@@ -49,6 +49,8 @@ urlpatterns = [
     path('apis/sendresponse', api_views.sendResponse, name='sendResponse'),
     path('apis/dc', api_views.Det_Cop, name='Det_Cop'),
     path('apis/uploadfile', api_views.uploadfile, name='uploadfile'),
+    #path('apis/add_banner', api_views.Add_Banner, name='Add_Banner'),
+    #path('apis/delete_banner', api_views.Delete_Banner, name='Delete_Banner'),
 
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),
@@ -66,4 +68,5 @@ urlpatterns = [
     path('apis/shop_now',api_views.Shop_Now, name='Shop_Now'),
     path('apis/popup_code_worked',api_views.Popup_Code_Worked, name='Popup_Code_Worked'),
     path('apis/is_coupon_useful',api_views.Is_Coupon_Useful, name='Is_Coupon_Useful'),
+    path('apis/search_Brand',api_views.Search_Brands, name='Search_Brands'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

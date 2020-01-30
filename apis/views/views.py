@@ -63,6 +63,9 @@ def auth_user(token):
         return False
     return user
 
+############################################################
+#             User Login
+############################################################
 
 @api_view(['POST'])
 def UserLogin(request):
@@ -139,7 +142,9 @@ def UserLogin(request):
         return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
+############################################################
+#             User Register
+############################################################
 
 
 @csrf_exempt
@@ -150,7 +155,9 @@ def UserRegister(request):
             deviceId = request.data['device_id']
             language_code = request.data.get('language_code')
             countryId = request.data.get('countryId')
+            print(countryId)
             BrandId = request.data.get('BrandId')
+            print(BrandId)
             email = request.data.get('email')
 
             if BrandId is not None:
@@ -211,6 +218,9 @@ def UserRegister(request):
         print(traceback.format_exc())
         return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#             Coupon Detail
+############################################################
 
 @csrf_exempt
 @api_view(['GET'])
@@ -246,6 +256,9 @@ def CouponDetails(request, id):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#             Filter
+############################################################
 
 @csrf_exempt
 @api_view(['POST'])
@@ -285,6 +298,9 @@ def filter(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#             Used Coupon
+############################################################
 
 @csrf_exempt
 @api_view(['GET'])
@@ -309,7 +325,9 @@ def UsedCoupon(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-
+############################################################
+#             On Off Notification
+############################################################
 
 @csrf_exempt
 @api_view(['GET'])
@@ -334,6 +352,10 @@ def OnOffNotification(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#             Notification List
+############################################################
+
 @csrf_exempt
 @api_view(['GET'])
 def NotificationList(request):
@@ -355,6 +377,10 @@ def NotificationList(request):
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+############################################################
+#             Home
+############################################################
 
 @csrf_exempt
 @api_view(['GET'])
@@ -391,6 +417,9 @@ def Home(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#             Countries List
+############################################################
 
 @api_view(['GET'])
 def Countries_List(request):
@@ -405,6 +434,9 @@ def Countries_List(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#             Brands List
+############################################################
 
 @api_view(['GET'])
 def Brands_List(request):
@@ -421,7 +453,9 @@ def Brands_List(request):
 
 
 
-
+############################################################
+#             Request Coupon
+############################################################
 
 
 @api_view(['POST'])
@@ -458,7 +492,9 @@ def Request_Coupon(request):
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
-
+############################################################
+#             Contact Us
+############################################################
 
 @api_view(['POST'])
 def Contact_Us(request):
@@ -490,6 +526,9 @@ def Contact_Us(request):
     except Exception as e:
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#               Shop Now
+############################################################
 
 @api_view(['POST'])
 def Shop_Now(request):
@@ -524,6 +563,9 @@ def Shop_Now(request):
         print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#              PopUp code worked
+############################################################
 
 @api_view(['GET'])
 def Popup_Code_Worked(request):
@@ -551,6 +593,9 @@ def Popup_Code_Worked(request):
     except Exception as e:
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+############################################################
+#             Is Coupon Useful
+############################################################
 
 @api_view(['POST'])
 def Is_Coupon_Useful(request):
@@ -581,4 +626,35 @@ def Is_Coupon_Useful(request):
 
 
     except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+############################################################
+#             Search Brands
+############################################################
+
+@api_view(['POST'])
+def Search_Brands(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+                
+            searchBrand=request.data['searchBrand']
+            brand = Brands.objects.filter(name = searchBrand , status=1)
+            if brand:
+                brand_serializer = BrandSerializer(brand, many = True)
+                    
+                return Response({"status": "1", 'message': 'Get successfully','data':brand_serializer.data},status=status.HTTP_200_OK)
+            else:
+                return Response({"status": "0", 'message': 'Brand Not Found'},status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
