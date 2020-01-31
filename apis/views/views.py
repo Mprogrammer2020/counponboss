@@ -382,6 +382,22 @@ def NotificationList(request):
 #             Home
 ############################################################
 
+def getSelectedBrand(brandshash,user):
+    for index, data in  enumerate(brandshash):
+        try:
+            selected_brand = UserSelectedBrands.objects.get(brand_id=data['id'], user_id=user.id)
+        except:
+            selected_brand = None
+        if selected_brand is not None:
+            brandshash[index]['is_brand_selected'] = True
+        else:
+            brandshash[index]['is_brand_selected'] = False
+        # country_ids = coupon_country.values_list('country_id', flat=True)
+        # countries = Country.objects.filter(id__in = country_ids , status=1)
+        # selected_country = CountrySerializer(countries, many=True)
+        # brandshash[index]['coupon_countries'] = selected_country.data
+
+
 @csrf_exempt
 @api_view(['GET'])
 def Home(request):
@@ -409,10 +425,13 @@ def Home(request):
             print(brandslist)
             brandsjson = BrandSerializer(brandslist, many=True)
 
+            brandshash = brandsjson.data
+            getSelectedBrand(brandshash, result)
+
             coupons = Coupon.objects.filter(status=1)
             couponsjson = CouponSerializer(coupons, many=True)
 
-            return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist": brandsjson.data, "couponslist": couponsjson.data}, status=status.HTTP_201_CREATED)
+            return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
