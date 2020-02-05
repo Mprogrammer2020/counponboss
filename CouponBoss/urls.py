@@ -70,4 +70,5 @@ urlpatterns = [
     path('apis/is_coupon_useful',api_views.Is_Coupon_Useful, name='Is_Coupon_Useful'),
     path('apis/search_Brand',api_views.Search_Brands, name='Search_Brands'),
     path('apis/change_country',api_views.Change_Country, name='Change_Country'),
+    path('apis/add_delete_brandsinhome',api_views.add_delete_brandsinhome, name='add_delete_brandsinhome'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

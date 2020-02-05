@@ -379,6 +379,59 @@ def NotificationList(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+############################################################
+#             User Selected Brands
+############################################################
+@csrf_exempt
+@api_view(['POST'])
+def add_delete_brandsinhome(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                result = auth_user(api_key)
+                if result == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            if(request.data['status'] == 0):   
+                for brandid in request.data['BrandId']:
+                    brand = Brands.objects.get(id=brandid)
+                    if brand:
+
+                        user_brands=UserSelectedBrands.objects.create(brand = brand,
+                                                user = result
+
+                                            )
+                msg = "successfully added"
+
+            if(request.data['status'] == 1):
+                for brandid in request.data['BrandId']:
+                        brand = Brands.objects.get(id=brandid)
+                        if brand:
+
+                            user_brands=UserSelectedBrands.objects.get(brand = brand,
+                                                    user = result).delete() 
+                msg = "successfully deleted"
+            brandslist = Brands.objects.all()
+            print(brandslist)
+            brandsjson = BrandSerializer(brandslist, many=True)
+
+            brandshash = brandsjson.data
+            getSelectedBrand(brandshash, result)
+
+            return Response({"message" : msg, "status" : "1", "brands": brandshash}, status=status.HTTP_201_CREATED)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
 ############################################################
 #             Home
 ############################################################
