@@ -86,7 +86,7 @@ def UserLogin(request):
             if email is None or email == "Null" or email == "null":
                 email = deviceId+"@couponboss.com"
 
-            # if language_code is None or email == "Null" or email == "null":
+            # if language_code is None or language_code == "Null" or language_code == "null":
             #     language_code = "en" 
 
             username = deviceId
@@ -212,7 +212,7 @@ def UserRegister(request):
                                                 )
                     token = Token.objects.create(user=authUser)    
                     userDetail = {'token':token.key, 'user': serialized_data.data}
-                    return Response({"status" : "1", 'message':'User has been successfully registered.', 'user' : userDetail}, status=status.HTTP_200_OK)      
+                    return Response({"status" : "1", 'message':'User has been successfully registered.', 'data' : userDetail}, status=status.HTTP_200_OK)      
             return Response({'status':0, 'message':"Please Add Brand."}, status=status.HTTP_400_BAD_REQUEST)                     
     except Exception as e:
         print(traceback.format_exc())
@@ -365,6 +365,7 @@ def NotificationList(request):
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 print(api_key)
                 result = auth_user(api_key)
+                print(result)
                 if result == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
@@ -418,10 +419,10 @@ def Home(request):
 
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id)
             brand_ids = userselectedbrands.values_list('brand_id', flat=True)
-            brands = Brands.objects.filter(id__in=brand_ids)
+            brands = Brands.objects.filter(id__in=brand_ids,status=1)
             usedbrandsjson = BrandSerializer(brands, many=True)
 
-            brandslist = Brands.objects.all()
+            brandslist = Brands.objects.filter(status=1)
             print(brandslist)
             brandsjson = BrandSerializer(brandslist, many=True)
 
@@ -667,7 +668,7 @@ def Search_Brands(request):
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
                 
             searchBrand=request.data['searchBrand']
-            brand = Brands.objects.filter(name = searchBrand , status=1)
+            brand = Brands.objects.filter(name__contains = searchBrand , status=1)
             if brand:
                 brand_serializer = BrandSerializer(brand, many = True)
                     
@@ -677,3 +678,39 @@ def Search_Brands(request):
     except Exception as e:
         print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+######################################################################
+#                  change country or language
+######################################################################
+
+
+@api_view(['PUT'])
+def Change_Country(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            language_code = request.data['language_code']
+            countryId = request.data['countryId']
+            if language_code:
+                authUser = User.objects.filter(id = user.id).update(language_code = language_code)
+            if countryId:
+                authUser = User.objects.filter(id = user.id).update(country_id = countryId)
+            
+            if authUser:
+                return Response({"status" : "1", 'message':'Changed successfully.'}, status=status.HTTP_200_OK)
+
+            else:
+               return Response({"message" : str(e), "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
+
+    except Exception as e:
+        print(traceback.format_exc())
+        return Response({"message" : str(e), "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -69,4 +69,5 @@ urlpatterns = [
     path('apis/popup_code_worked',api_views.Popup_Code_Worked, name='Popup_Code_Worked'),
     path('apis/is_coupon_useful',api_views.Is_Coupon_Useful, name='Is_Coupon_Useful'),
     path('apis/search_Brand',api_views.Search_Brands, name='Search_Brands'),
+    path('apis/change_country',api_views.Change_Country, name='Change_Country'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

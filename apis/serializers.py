@@ -59,10 +59,10 @@ class CouponCountriesSerializer(serializers.ModelSerializer):
         model = CouponCountries
         fields =('__all__')
 
-# class BannerSerializer(serializers.ModelSerializer):
+class BannerSerializer(serializers.ModelSerializer):
     
-#     class Meta:
-#         model = Banner
-#         fields =('__all__')
+    class Meta:
+        model = Banner
+        fields =('__all__')
 
         

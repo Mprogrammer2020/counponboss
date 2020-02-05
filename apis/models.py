@@ -18,16 +18,16 @@ class Country(models.Model):
         verbose_name_plural = _('countries')
         db_table = "countries"
 
-# class Banner(models.Model):
-#     id = models.BigAutoField(primary_key=True)
-#     name = models.CharField(max_length=100,blank=True)
-#     image = models.CharField(max_length=255,blank=True)
-#     status = models.IntegerField(default=1)
+class Banner(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=100,blank=True)
+    image = models.CharField(max_length=255,blank=True)
+    status = models.IntegerField(default=1)
     
-#     class Meta:
-#         verbose_name = _('banner')
-#         verbose_name_plural = _('banners')
-#         db_table = "banners"
+    class Meta:
+        verbose_name = _('banner')
+        verbose_name_plural = _('banners')
+        db_table = "banners"
 
 class Brands(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -144,7 +144,7 @@ class Coupon(models.Model):
     
     id = models.BigAutoField(primary_key=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
-    #banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
+    banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
     description = models.TextField(default='')
     description_ar = models.TextField(default='') 
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
