@@ -402,6 +402,7 @@ def add_delete_brandsinhome(request):
                 for brandid in request.data['BrandId']:
                     brand = Brands.objects.get(id=brandid)
                     if brand:
+                        print(result,"dshfhg")
 
                         user_brands=UserSelectedBrands.objects.create(brand = brand,
                                                 user = result
@@ -414,7 +415,7 @@ def add_delete_brandsinhome(request):
                         brand = Brands.objects.get(id=brandid)
                         if brand:
 
-                            user_brands=UserSelectedBrands.objects.get(brand = brand,
+                            user_brands=UserSelectedBrands.objects.filter(brand = brand,
                                                     user = result).delete() 
                 msg = "successfully deleted"
             brandslist = Brands.objects.filter(status=1)
@@ -712,25 +713,27 @@ def Search_Brands(request):
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 print(api_key)
-                token1 = Token.objects.get(key=api_key)
-                user = token1.user
-                check_group = user.groups.filter(name='User').exists()
-                if check_group == False:
+                result = auth_user(api_key)
+                if result == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
-                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
                 
             searchBrand=request.data['searchBrand']
             brand = Brands.objects.filter(name__contains = searchBrand , status=1)
             if brand:
                 brand_serializer = BrandSerializer(brand, many = True)
+                brandserial = brand_serializer.data
+                getSelectedBrand(brandserial, result)
                     
-                return Response({"status": "1", 'message': 'Get successfully','data':brand_serializer.data},status=status.HTTP_200_OK)
+                return Response({"status": "1", 'message': 'Get successfully','data':brandserial},status=status.HTTP_200_OK)
             else:
                 return Response({"status": "0", 'message': 'Brand Not Found'},status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
         print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
 ######################################################################
 #                  change country or language
