@@ -80,12 +80,14 @@ def AdminLogin(request):
                 email = deviceId+"@couponboss.com"
             username = deviceId
             print(deviceId)
-            nowTime = datetime.now()       
+            nowTime = datetime.now() 
+            is_email_error = False      
             try:
                 existedUser = User.objects.get(email =email)
                 print(existedUser)
             except:
                 existedUser = None
+                is_email_error = True
             if existedUser is not None:
                 authUser = authenticate(username=email, password=password)
                 if authUser is not None:
@@ -105,12 +107,12 @@ def AdminLogin(request):
                             token = token1.key 
                         serialized_data = UserSerializer(existedUser)
                         userDetail = {'token':token, 'user': serialized_data.data }
-                        return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail}, status=status.HTTP_200_OK)
+                        return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, 'is_email_error':is_email_error}, status=status.HTTP_200_OK)
 
                 else:
-                        return Response({"status" : "1", 'message':'Email Or Password is Wrong.'}, status=status.HTTP_400_BAD_REQUEST)
+                        return Response({"status" : "1", 'message':'Email Or Password is Wrong.','is_email_error':is_email_error}, status=status.HTTP_400_BAD_REQUEST)
             else:
-            	return Response({"status" : "1", 'message':'Please Register Your Account.'}, status=status.HTTP_200_OK)
+            	return Response({"status" : "1", 'message':'Please Register Your Account.','is_email_error':is_email_error}, status=status.HTTP_400_BAD_REQUEST)
                                
 
     except Exception as e:
