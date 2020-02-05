@@ -417,7 +417,7 @@ def add_delete_brandsinhome(request):
                             user_brands=UserSelectedBrands.objects.get(brand = brand,
                                                     user = result).delete() 
                 msg = "successfully deleted"
-            brandslist = Brands.objects.all()
+            brandslist = Brands.objects.filter(status=1)
             print(brandslist)
             brandsjson = BrandSerializer(brandslist, many=True)
 
