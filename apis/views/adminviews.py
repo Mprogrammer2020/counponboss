@@ -1181,7 +1181,7 @@ def Det_Cop(request):
                 obj["total_used"] = obj["useful_coupons"]+obj["notuseful_coupons"] 
 
                 obj["coupon_countries"] = selected_country.data
-                return Response({"message" : addSuccessMessage, "status" : "1", "coupon": obj}, status=status.HTTP_201_CREATED)
+                return Response({"message" : addSuccessMessage, "status" : "1", "coupon": obj,"cop_con": countries_ids}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Coupon Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -1247,60 +1247,60 @@ def uploadfile(request):
 #                    Add Banner
 ##########################################################################
 
-@api_view(['POST'])
-def Add_Banner(request):
-    try:
-        with transaction.atomic():
-            #received_json_data = json.loads(request.data['data'], strict=False)
-            try:
-                api_key = request.META.get('HTTP_AUTHORIZATION')
-                token1 = Token.objects.get(key=api_key)
-                user = token1.user
-                check_group = user.groups.filter(name='Admin').exists()
-                if check_group == False:
-                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            except:
-                print(traceback.format_exc())
-                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+# @api_view(['POST'])
+# def Add_Banner(request):
+#     try:
+#         with transaction.atomic():
+#             #received_json_data = json.loads(request.data['data'], strict=False)
+#             try:
+#                 api_key = request.META.get('HTTP_AUTHORIZATION')
+#                 token1 = Token.objects.get(key=api_key)
+#                 user = token1.user
+#                 check_group = user.groups.filter(name='Admin').exists()
+#                 if check_group == False:
+#                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+#             except:
+#                 print(traceback.format_exc())
+#                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
           
-            banner_detail=Banner.objects.create(name = request.data['name'],
+#             banner_detail=Banner.objects.create(name = request.data['name'],
             
-                                                      )
+#                                                       )
 
-            if banner_detail is not None:                                       
+#             if banner_detail is not None:                                       
 
-                return Response({"message" : addSuccessMessage, "status" : "1", "banner":BannerSerializer(banner_detail).data['id']}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    except Exception:
-        print(traceback.format_exc())
-        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#                 return Response({"message" : addSuccessMessage, "status" : "1", "banner":BannerSerializer(banner_detail).data['id']}, status=status.HTTP_201_CREATED)
+#             else:
+#                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#     except Exception:
+#         print(traceback.format_exc())
+#         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-##########################################################################
-#                    delete Banner
-##########################################################################
+# ##########################################################################
+# #                    delete Banner
+# ##########################################################################
 
-@api_view(['POST'])
-def Delete_Banner(request):
-    try:
-        with transaction.atomic():
-            try:
-                api_key = request.META.get('HTTP_AUTHORIZATION')
-                token1 = Token.objects.get(key=api_key)
-                user = token1.user
-                check_group = user.groups.filter(name='Admin').exists()
-                if check_group == False:
-                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            except:
-                print(traceback.format_exc())
-                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            bannerId=request.data['id']
-            del_banner = Banner.objects.filter(id = bannerId,status=1).exists()
-            if del_banner :
-                dele = Banner.objects.filter(id = bannerId).update(status = 0)
-                return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
-            else:
-                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    except Exception:
-        print(traceback.format_exc())
-        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+# @api_view(['POST'])
+# def Delete_Banner(request):
+#     try:
+#         with transaction.atomic():
+#             try:
+#                 api_key = request.META.get('HTTP_AUTHORIZATION')
+#                 token1 = Token.objects.get(key=api_key)
+#                 user = token1.user
+#                 check_group = user.groups.filter(name='Admin').exists()
+#                 if check_group == False:
+#                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+#             except:
+#                 print(traceback.format_exc())
+#                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+#             bannerId=request.data['id']
+#             del_banner = Banner.objects.filter(id = bannerId,status=1).exists()
+#             if del_banner :
+#                 dele = Banner.objects.filter(id = bannerId).update(status = 0)
+#                 return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+#             else:
+#                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#     except Exception:
+#         print(traceback.format_exc())
+#         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
