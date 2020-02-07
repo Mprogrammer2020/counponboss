@@ -152,32 +152,59 @@ def UserLogin(request):
 def UserRegister(request):
     try:
         with transaction.atomic():
-            deviceId = request.data['device_id']
-            language_code = request.data.get('language_code')
-            countryId = request.data.get('countryId')
-            print(countryId)
-            BrandId = request.data.get('BrandId')
-            print(BrandId)
-            email = request.data.get('email')
+            deviceId = request.data['device_id'] if request.data.get('device_id') else None
 
-            if BrandId is not None:
-                if request.POST.get('deviceType') is not None:
-                    deviceType = request.data['deviceType']
-                else:
-                    deviceType = "a"
-                if language_code is None or email == "Null" or email == "null":
-                    language_code = "en" 
-                if email is None or email == "Null" or email == "null":
-                    email = deviceId+"@couponboss.com"
-                username = deviceId
-                nowTime = datetime.now()            
-                try:
-                    existedUser = User.objects.get(device_id =deviceId)
-                except:
-                    existedUser = None
-                if existedUser is not None:
-                    return Response({"status" : "1", 'message':'User Already Registered'}, status=status.HTTP_200_OK)
-                else:
+            language_code = request.data.get('language_code') if request.data.get('language_code') else None
+
+            countryId = request.data.get('countryId') if request.data.get('countryId') else None
+            
+            BrandId = request.data.get('BrandId') if request.data.get('BrandId') else None
+            
+            email = request.data.get('email') if request.data.get('email') else None
+
+            
+            if request.POST.get('deviceType') is not None:
+                deviceType = request.data['deviceType']
+            else:
+                deviceType = "a"
+            if language_code is None or email == "Null" or email == "null":
+                language_code = "en" 
+            if email is None or email == "Null" or email == "null":
+                email = deviceId+"@couponboss.com"
+
+            username = deviceId
+            nowTime = datetime.now()            
+            try:
+                existedUser = User.objects.get(device_id =deviceId)
+            except:
+                existedUser = None
+            if existedUser is not None:
+                authUser = authenticate(username=email, password=deviceId)
+                checkGroup = authUser.groups.filter(name='User').exists()
+
+                if checkGroup:
+                    filter_user =  User.objects.filter(device_id =deviceId)
+
+                    user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
+                    user_brands_serialize = BrandSerializer(user_brands, many=True)                          
+                    token = ''                    
+                    try:
+                        user_with_token = Token.objects.get(user=authUser)
+                    except:
+                        user_with_token = None
+                    if user_with_token is None:
+                        token1 = Token.objects.create(user=authUser)
+                        token = token1.key
+                    else:
+                        Token.objects.get(user=authUser).delete()
+                        token1 = Token.objects.create(user=authUser)
+                        token = token1.key 
+                    serialized_data = UserSerializer(existedUser)
+                    userDetail = {'token':token, 'user': serialized_data.data }
+                    return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, 'user_brands': user_brands_serialize.data, "is_registered": True}, status=status.HTTP_200_OK)
+                   
+            else:
+                if BrandId is not None:
                     try:
                         country = Country.objects.get(id=countryId,status=1)
                     except:
@@ -210,10 +237,13 @@ def UserRegister(request):
                                                     user = authUser
 
                                                 )
-                    token = Token.objects.create(user=authUser)    
+                    token = Token.objects.create(user=authUser)  
+                    filter_user =  User.objects.filter(device_id =deviceId)  
+                    user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
+                    user_brands_serialize = BrandSerializer(user_brands, many=True)                       
                     userDetail = {'token':token.key, 'user': serialized_data.data}
-                    return Response({"status" : "1", 'message':'User has been successfully registered.', 'data' : userDetail}, status=status.HTTP_200_OK)      
-            return Response({'status':0, 'message':"Please Add Brand."}, status=status.HTTP_400_BAD_REQUEST)                     
+                    return Response({"status" : "1", 'message':'User has been successfully registered.', 'data' : userDetail, 'user_brands': user_brands_serialize.data, "is_registered": False}, status=status.HTTP_200_OK)      
+                return Response({'status':0, 'message':"Please Add Brand."}, status=status.HTTP_400_BAD_REQUEST)                     
     except Exception as e:
         print(traceback.format_exc())
         return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
