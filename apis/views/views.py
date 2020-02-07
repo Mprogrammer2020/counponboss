@@ -147,6 +147,24 @@ def UserLogin(request):
 ############################################################
 
 
+import string
+import random
+
+def is_unique_username():
+    try:
+        uniqueval = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))+"@couponboss.com"
+        try:
+            is_unique = User.objects.get(username=uniqueval)
+        except:
+            is_unique = None
+        if is_unique is not None:
+            is_unique_username (username)
+        else:
+            return uniqueval
+    except:
+        return False
+
+
 @csrf_exempt
 @api_view(['POST'])
 def UserRegister(request):
@@ -161,7 +179,8 @@ def UserRegister(request):
             BrandId = request.data.get('BrandId') if request.data.get('BrandId') else None
             
             email = request.data.get('email') if request.data.get('email') else None
-
+         
+         
             
             if request.POST.get('deviceType') is not None:
                 deviceType = request.data['deviceType']
@@ -179,7 +198,7 @@ def UserRegister(request):
             except:
                 existedUser = None
             if existedUser is not None:
-                authUser = authenticate(username=email, password=deviceId)
+                authUser = authenticate(username=existedUser.email, password=deviceId)
                 checkGroup = authUser.groups.filter(name='User').exists()
 
                 if checkGroup:
@@ -209,6 +228,7 @@ def UserRegister(request):
                         country = Country.objects.get(id=countryId,status=1)
                     except:
                         return Response({"status" : "0", 'message':'Invalid Country'}, status=status.HTTP_404_NOT_FOUND)
+                    email = is_unique_username()
                     authUser = User.objects.create(username=email,
                                              email=email,
                                              first_name='firstname',
