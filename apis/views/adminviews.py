@@ -1263,6 +1263,12 @@ def uploadfile(request):
                     filename = fs.save("couponimages/"+str(request_id)+"/"+file.name, file)
                     uploaded_file_url = fs.url(filename)
                     Coupon.objects.filter(id = request_id).update(image = uploaded_file_url)
+                if request.data.get('type') == "userprofile":
+                    file = request.FILES.get('file')
+                    fs = FileSystemStorage()
+                    filename = fs.save("userimage/"+str(request_id)+"/"+file.name, file)
+                    uploaded_file_url = fs.url(filename)
+                    User.objects.filter(id = request_id).update(image = uploaded_file_url)
                 if request.data.get('type') == "notifications":
                     for notification_ids in request_id:
                         file = request.FILES.get('file')
@@ -1276,6 +1282,32 @@ def uploadfile(request):
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)       
 
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def updateProfile(request):
+    try:
+        with transaction.atomic():
+            try:
+                pdb.set_trace()
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            user.first_name = request.data.get('first_name')  
+            user.last_name = request.data.get('last_name') 
+            user.email = request.data.get('email')   
+            user.username = request.data.get('email')           
+            user.save(update_fields=['first_name', 'last_name', 'email', 'username'])
+            return Response({"Message": "User Updated Successfully.", "user": user.id,"status" : "1"}, status=status.HTTP_200_OK)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

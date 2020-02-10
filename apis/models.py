@@ -44,8 +44,10 @@ class Brands(models.Model):
 
 class BrandCountries(models.Model):
     id = models.BigAutoField(primary_key=True)
+
     country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+
     status = models.IntegerField(default=1)
     
     class Meta:
@@ -61,9 +63,10 @@ class User(AbstractUser):
     on_off_notification = models.BooleanField(max_length=64,default=True)
     last_login_time = models.DateTimeField()
     device_type = models.CharField(max_length=10, default="")
-    device_id = models.CharField(max_length=255, default="")
-    device_uid = models.CharField(max_length=255, default="")
+    device_id = models.TextField(max_length=255, default="")
+    device_uid = models.TextField(max_length=255, default="")
     language_code = models.CharField(max_length=64, default='en')
+    image = models.CharField(max_length=250,default="")
     
     def save(self, *args, **kwargs):
         if not self.id:
@@ -123,9 +126,11 @@ class Notification(models.Model):
     title_ar = models.CharField(max_length=150,default="")
     discription = models.TextField(default='')
     discription_ar = models.TextField(default='')
+
     image = models.CharField(max_length=150, default="")
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, null=True, blank=True, on_delete=models.CASCADE)
+
     receiver = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE, related_name="notification_receiver")
     is_read = models.BooleanField(default=False)
     created_time = models.DateTimeField()
@@ -143,8 +148,14 @@ class Notification(models.Model):
 class Coupon(models.Model):
     
     id = models.BigAutoField(primary_key=True)
+
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
-    banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
+
+    # banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
+
+    #banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
+
+
     description = models.TextField(default='')
     description_ar = models.TextField(default='') 
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
@@ -177,9 +188,9 @@ class Coupon(models.Model):
 class UserCouponLogs(models.Model):
     
     id = models.BigAutoField(primary_key=True)
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
-    coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE)
-    is_used = models.IntegerField(default=0)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE,related_name='uclogsuser')
+    coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE ,related_name='uclogscoupon')
+    is_used = models.IntegerField(default=0) #is_used=1--> useful, 2--> not useful, 0-->not used
     created_time = models.DateTimeField()
     def save(self, *args, **kwargs):
         if not self.id:
@@ -194,8 +205,8 @@ class UserCouponLogs(models.Model):
 
 class UserSelectedBrands(models.Model):
     id = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
-    brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE ,related_name='usbranduser')
+    brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE,related_name='usbrandbrand')
     status = models.IntegerField(default=1)
     
     
@@ -206,8 +217,8 @@ class UserSelectedBrands(models.Model):
 
 class CouponCountries(models.Model):
     id = models.BigAutoField(primary_key=True)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True)
-    coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE, blank=True, null=True,related_name='cccountry')
+    coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE,related_name='cccoupon')
     status = models.IntegerField(default=1)
     
     class Meta:

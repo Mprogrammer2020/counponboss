@@ -49,9 +49,8 @@ urlpatterns = [
     path('apis/sendresponse', api_views.sendResponse, name='sendResponse'),
     path('apis/dc', api_views.Det_Cop, name='Det_Cop'),
     path('apis/uploadfile', api_views.uploadfile, name='uploadfile'),
-    #path('apis/add_banner', api_views.Add_Banner, name='Add_Banner'),
-    #path('apis/delete_banner', api_views.Delete_Banner, name='Delete_Banner'),
-
+    path('apis/updateProfile', api_views.updateProfile, name='updateProfile'),
+    url(r'^api/auth', api_views.password_change, name='auth'),
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),
     path('apis/userlogin', api_views.UserLogin, name='UserLogin'),
