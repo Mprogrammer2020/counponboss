@@ -50,13 +50,15 @@ import pdb;
 from commons.constants import *
 from pyfcm import FCMNotification
 from django.core.files.storage import FileSystemStorage
+
 from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
+
 
 errorMessage = "Sorry! Something went wrong."
 addSuccessMessage = "Successfully added."
 loginSuccessMessage = "Successfully login"
 editSuccessMessage = "Successfully Edited."
-fcm_api_key = "1234567890"
+fcm_api_key = "AAAAmkEBcDo:APA91bGy8PhMQOZ-KVPGuwpZTgEZkHch1UWYIC_PiMN6j_awN2AErFqnZwi21Aoqu2FPPF1Hhh35NalwUJAIeqvuOG-3BgBpmDwqvk0oCSx65zEs6mY5X9EvSfNMVV0BTZ4iRFKj5u-T"
 
 
 #############################################################
@@ -1018,6 +1020,7 @@ def SendNotification(request):
                 country = Country.objects.get(id=countryId)
 
             idsArray = []
+            notification_ids = []
 
             ## find brands exists in country
             brand_countries_exist = BrandCountries.objects.filter(brand_id=brandId, country_id=countryId )
@@ -1030,13 +1033,15 @@ def SendNotification(request):
                     if user and  user_json.data["on_off_notification"]:
                         # Notification Created
                         notifify = Notification.objects.create(title=title, discription=description, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar)
+
+                        notification_ids.append(notifify.id)
                         # if request.data.get('image') is not None:
                         #     notifify.image= request.data.get('image')               
                         #     notifify.save(update_fields=['image'])
 
-                
                 #Send Fcm Notification
-                # if idsArray.__len__() > 0:
+                if idsArray.__len__() > 0 and request.data.get('is_file') == False:
+                    sendfcmnotifiction(notification_ids)
                 #     push_service = FCMNotification(api_key=fcm_api_key)
                 #     registration_ids = idsArray
 
@@ -1049,7 +1054,7 @@ def SendNotification(request):
                 #     result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
 
                     # print(result)
-                return Response({"Message": "Notification Send Successfully.", "notification": notifify.id,"status" : "1"}, status=status.HTTP_200_OK)
+                return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
                 # else:   
                 #     return Response({"Message": "Something Occur.", "status" : "0"}, status=status.HTTP_400_BAD_REQUEST)
             else:
@@ -1057,6 +1062,32 @@ def SendNotification(request):
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+def sendfcmnotifiction(notification_ids):
+    try:
+        idsArray = []
+        if notification_ids.__len__() > 0:
+            for notification_id in notification_ids:
+                print("ghello")      
+                user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True))
+                user_serializer = UserSerializer(user, many=True)
+                idList = user_serializer.data[0]['device_id']
+                idsArray.append(idList)
+            push_service = FCMNotification(api_key=fcm_api_key)
+            registration_ids = idsArray
+            notify = Notification.objects.get(id=notification_ids[0])
+            notify_data = NotificationSerializer(notify)
+            data_message = notify_data.data
+            result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=notify_data.data['discription'], data_message=data_message)
+
+        print(result)
+    except Exception:
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 ############################################################
 #     Change Admin Password
@@ -1206,7 +1237,11 @@ def uploadfile(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
             try:
-                request_id = int(request.data.get('id'))
+                if request.data.get('type') == "notifications":
+                    is_array = isinstance(request.data.get('id').split(','), list)
+                    request_id = request.data.get('id').split(',')
+                else:
+                    request_id = int(request.data.get('id'))
             except:
                 request_id = None
             if request_id is not None:
@@ -1229,11 +1264,13 @@ def uploadfile(request):
                     uploaded_file_url = fs.url(filename)
                     Coupon.objects.filter(id = request_id).update(image = uploaded_file_url)
                 if request.data.get('type') == "notifications":
-                    file = request.FILES.get('file')
-                    fs = FileSystemStorage()
-                    filename = fs.save("notificationimages/"+str(request_id)+"/"+file.name, file)
-                    uploaded_file_url = fs.url(filename)
-                    Notification.objects.filter(id = request_id).update(image = uploaded_file_url)
+                    for notification_ids in request_id:
+                        file = request.FILES.get('file')
+                        fs = FileSystemStorage()
+                        filename = fs.save("notificationimages/"+str(notification_ids)+"/"+file.name, file)
+                        uploaded_file_url = fs.url(filename)
+                        Notification.objects.filter(id = notification_ids).update(image = uploaded_file_url)
+                    sendfcmnotifiction(request_id)
 
                 return Response({"message" : "Response Send Succesfully","status" : "1"}, status=status.HTTP_200_OK)
             else:
