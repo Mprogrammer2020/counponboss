@@ -306,6 +306,11 @@ def CouponDetails(request, id):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+
+
+
 ############################################################
 #             Filter
 ############################################################
@@ -397,7 +402,7 @@ def OnOffNotification(request):
             result.on_off_notification= value               
             result.save(update_fields=['on_off_notification'])
             user_data = UserSerializer(result)
-            return Response({"message" : "Success", "status" : "1", "User": user_data.data}, status=status.HTTP_201_CREATED)
+            return Response({"message" : "Success", "status" : "1", "User": user_data.data['on_off_notification']}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -536,7 +541,9 @@ def Home(request):
             coupons = Coupon.objects.filter(status=1)
             couponsjson = CouponSerializer(coupons, many=True)
 
-            return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data}, status=status.HTTP_201_CREATED)
+            user_data = UserSerializer(result)
+
+            return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification']}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

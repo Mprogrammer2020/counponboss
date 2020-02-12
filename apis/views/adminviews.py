@@ -1072,7 +1072,7 @@ def sendfcmnotifiction(notification_ids):
         if notification_ids.__len__() > 0:
             for notification_id in notification_ids:
                 print("ghello")      
-                user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True))
+                user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=False)
                 user_serializer = UserSerializer(user, many=True)
                 idList = user_serializer.data[0]['device_id']
                 idsArray.append(idList)
