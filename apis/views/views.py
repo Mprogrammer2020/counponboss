@@ -507,6 +507,7 @@ def getSelectedBrand(brandshash,user):
         # selected_country = CountrySerializer(countries, many=True)
         # brandshash[index]['coupon_countries'] = selected_country.data
 
+from decimal import Decimal
 
 @csrf_exempt
 @api_view(['GET'])
@@ -540,6 +541,9 @@ def Home(request):
 
             coupons = Coupon.objects.filter(status=1)
             couponsjson = CouponSerializer(coupons, many=True)
+
+            for index, data in  enumerate(couponsjson.data):
+                data['discount'] = Decimal(data['discount'])
 
             user_data = UserSerializer(result)
 
