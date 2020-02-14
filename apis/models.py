@@ -166,9 +166,10 @@ class Coupon(models.Model):
     created_time = models.DateTimeField()
     updated_time = models.DateTimeField()
     no_of_users = models.IntegerField(default=0)
-    last_usage_time = models.DateTimeField()
+    last_usage_time = models.DateTimeField(blank=True, null=True)
     title = models.CharField(max_length=150, default="")    
     is_featured = models.BooleanField(default=False)
+    expire_date = models.DateTimeField(default= datetime.datetime.utcnow().replace(tzinfo=utc))
     
     def save(self, *args, **kwargs):
         if not self.id:

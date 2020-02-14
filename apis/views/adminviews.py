@@ -299,6 +299,8 @@ def Add_Coupon(request):
                                                         # headline_ar = request.data['headline_ar'],
                                                         # description_ar = request.data['description_ar'],
                                                       )
+            coupon_detail.expire_date=request.data['expiry_date']
+            coupon_detail.save()
 
             if coupon_detail is not None:                                       
                 try:
