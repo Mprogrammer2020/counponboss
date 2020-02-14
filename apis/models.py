@@ -63,8 +63,10 @@ class User(AbstractUser):
     on_off_notification = models.BooleanField(max_length=64,default=True)
     last_login_time = models.DateTimeField()
     device_type = models.CharField(max_length=10, default="")
+
     device_id = models.TextField(max_length=255, default="")
     device_uid = models.TextField(max_length=255, default="")
+
     language_code = models.CharField(max_length=64, default='en')
     image = models.CharField(max_length=250,default="")
     
@@ -151,11 +153,6 @@ class Coupon(models.Model):
 
     brand = models.ForeignKey(Brands, null=True, blank=True, on_delete=models.CASCADE)
 
-    # banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
-
-    #banner = models.ForeignKey(Banner, null=True, blank=True, on_delete=models.CASCADE)
-
-
     description = models.TextField(default='')
     description_ar = models.TextField(default='') 
     discount = models.DecimalField(max_digits=9, decimal_places=6, null=True)
@@ -177,7 +174,7 @@ class Coupon(models.Model):
         if not self.id:
             self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
             self.updated_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-            self.last_usage_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+            # self.last_usage_time = datetime.datetime.utcnow().replace(tzinfo=utc)
         super(Coupon, self).save(*args, **kwargs)
     
     class Meta:
@@ -225,4 +222,15 @@ class CouponCountries(models.Model):
         verbose_name = _('coupon_countries')
         verbose_name_plural = _('coupon_countries')
         db_table = "coupon_countries"
+
+class SocialMedia(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=255, default="")
+    url = models.CharField(max_length=255, default="")
+    status = models.IntegerField(default=1)
+    
+    class Meta:
+        verbose_name = _('social_media')
+        verbose_name_plural = _('social_media')
+        db_table = "social_media"
     

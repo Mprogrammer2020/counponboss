@@ -208,6 +208,64 @@ def Get_Admin_Profile(request):
         print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+###############################################################
+#                      Edit Admin Profile
+###############################################################
+
+
+@api_view(['POST'])
+def EditAdminProfile(request):
+    try:
+        with transaction.atomic():
+            API_key = request.META.get('HTTP_AUTHORIZATION')
+            if API_key is not None:
+                try:
+                    token1 = Token.objects.get(key=API_key)
+                    user = token1.user
+                    checkGroup = user.groups.filter(name='Admin').exists()
+                except:
+                    return Response({"message": "Session expired!! please login again", "status": "0"},
+                                    status=status.HTTP_401_UNAUTHORIZED)
+                if checkGroup:
+                    wikiuser = Users.objects.get(user_auth_id=user.id)
+                    userObj1 = Users.objects.filter(pk=wikiuser.id).update(firstName=request.data['firstName'], lastName=request.data['lastName'], address=request.data['address'])
+
+                    if request.data['profile_pic'] !="":
+                        adminPicName = '/admin_' + timezone.now().strftime("%S%H%M%f") + '.png'
+                        tempString = ""
+                        try:
+                            format, tempString = request.data['profile_pic'].split(';base64,')
+                        except:
+                            tempString = ""
+
+                        if tempString == "":
+                            tempString = request.data['profile_pic']
+
+                        image_64_decode = base64.b64decode(tempString)
+                        pathString = str(settings.MEDIA_ROOT) + "/profile_pic/" + str(wikiuser.id)
+                        if not os.path.exists(pathString): os.makedirs(pathString)
+                        for root, dirs, files in os.walk(pathString):
+                            for file in files:
+                                os.remove(os.path.join(pathString, file))
+
+                        fh = open(pathString + adminPicName, "wb")  # create a writable image and write the decoding result
+                        fh.write(image_64_decode)
+                        fh.close()
+                        coverPicUrl = settings.MEDIA_URL + "profile_pic/" + str(wikiuser.id) + adminPicName
+                        userObj2 = Users.objects.filter(pk=wikiuser.id).update(image=coverPicUrl)
+
+
+                    return Response({"status": "1", 'message': 'Updated successfully.'}, status=status.HTTP_200_OK)
+
+                else:
+                    return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    except Exception as e:
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 ############################################################
 #      Add coupon
 ############################################################
@@ -1042,6 +1100,7 @@ def SendNotification(request):
                 #Send Fcm Notification
                 if idsArray.__len__() > 0 and request.data.get('is_file') == False:
                     sendfcmnotifiction(notification_ids)
+                    
                 #     push_service = FCMNotification(api_key=fcm_api_key)
                 #     registration_ids = idsArray
 
@@ -1049,9 +1108,9 @@ def SendNotification(request):
                 #             "message_title" :title ,
                 #             "message_body" : description,
                            
-                #         }
+                        
                     
-                #     result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
+                    #result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
 
                     # print(result)
                 return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
@@ -1072,18 +1131,20 @@ def sendfcmnotifiction(notification_ids):
         if notification_ids.__len__() > 0:
             for notification_id in notification_ids:
                 print("ghello")      
-                user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=False)
+                user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=True)
                 user_serializer = UserSerializer(user, many=True)
-                idList = user_serializer.data[0]['device_id']
-                idsArray.append(idList)
+                if user_serializer.data != []:
+                    idList = user_serializer.data[0]['device_id'] 
+                    idsArray.append(idList)
             push_service = FCMNotification(api_key=fcm_api_key)
             registration_ids = idsArray
             notify = Notification.objects.get(id=notification_ids[0])
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
+            data_message['click_action'] ='OPEN_ACTIVITY_1'
             result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=notify_data.data['discription'], data_message=data_message)
 
-        print(result)
+        print(result,"gfhd")
     except Exception:
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -1292,7 +1353,6 @@ def updateProfile(request):
     try:
         with transaction.atomic():
             try:
-                pdb.set_trace()
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
@@ -1373,3 +1433,137 @@ def updateProfile(request):
 #     except Exception:
 #         print(traceback.format_exc())
 #         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+############################################################
+#     Add Brands
+############################################################
+
+@api_view(['POST'])
+def Add_Social(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                country_added = 0
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+
+                              
+            social_detail=SocialMedia.objects.create(name = request.data['name'],
+                                            url = request.data['url'])
+                    
+            if social_detail is not None:
+
+                    
+                return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            
+            
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+############################################################
+#     Edit Social
+############################################################
+import base64
+@api_view(['PUT'])
+def Edit_Social(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                country_added = 0
+                socialId = request.data['socialId']
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            social =  SocialMedia.objects.filter(id=socialId)
+            if social is not None:
+                
+                social_detail=SocialMedia.objects.filter(id=brandId).update(name = request.data['name'],
+                                                                            url = request.data['url'])
+
+                if social_detail is not None:
+                                
+                    return Response({"message" : editSuccessMessage, "status" : "1", "brand": socialId}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
+                       
+            else:
+               return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+############################################################
+#     Get Social
+############################################################
+
+@api_view(['GET'])
+def GetSocial(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
+            social_list = SocialMedia.objects.filter(status = 1)
+            if social_list is not None:
+                social_serializer = SocialMediaSerializer(social_list, many=True)
+                return Response({"message" : addSuccessMessage, "response" : obj, "status" : "1" ,"count":obj.__len__()}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+############################################################
+#     Show social
+############################################################
+
+@api_view(['POST'])
+def Show_social(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                country_added = 0
+                SocialId = request.data.get('SocialId')
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            social = SocialMedia.objects.get(id=SocialId)
+            if social is not None:
+                social_detail = SocialMediaSerializer(social)
+                return Response({"message" : addSuccessMessage, "status" : "1", "social": social_detail.data}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : "Brand Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

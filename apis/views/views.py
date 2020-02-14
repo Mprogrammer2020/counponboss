@@ -402,7 +402,7 @@ def OnOffNotification(request):
             result.on_off_notification= value               
             result.save(update_fields=['on_off_notification'])
             user_data = UserSerializer(result)
-            return Response({"message" : "Success", "status" : "1", "User": user_data.data['on_off_notification']}, status=status.HTTP_201_CREATED)
+            return Response({"message" : "Success", "status" : "1", "notification_status": user_data.data['on_off_notification']}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -457,12 +457,13 @@ def add_delete_brandsinhome(request):
                 for brandid in request.data['BrandId']:
                     brand = Brands.objects.get(id=brandid)
                     if brand:
-                        print(result,"dshfhg")
+                        if UserSelectedBrands.objects.filter(brand = brand ,user = result).exists():
+                            return Response({"message" : "already selected", "status" : "1"}, status=status.HTTP_200_OK)
+                        else:
+                            user_brands=UserSelectedBrands.objects.create(brand = brand,
+                                                    user = result
 
-                        user_brands=UserSelectedBrands.objects.create(brand = brand,
-                                                user = result
-
-                                            )
+                                                )
                 msg = "successfully added"
 
             if(request.data['status'] == 1):
@@ -496,8 +497,11 @@ def getSelectedBrand(brandshash,user):
     for index, data in  enumerate(brandshash):
         try:
             selected_brand = UserSelectedBrands.objects.get(brand_id=data['id'], user_id=user.id)
+            print("hhhh")
         except:
+            print("nnnnn")
             selected_brand = None
+
         if selected_brand is not None:
             brandshash[index]['is_brand_selected'] = True
         else:
@@ -599,18 +603,15 @@ def Request_Coupon(request):
         with transaction.atomic():
             try:
                 api_key = request.META.get('HTTP_AUTHORIZATION')
-                print(api_key)
                 token1 = Token.objects.get(key=api_key)
-                print(token1)
                 user = token1.user
-                print(user)
                 check_group = user.groups.filter(name='User').exists()
+                
                 if check_group == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
             user1 = User.objects.get(id=user.id)
-                
             reqCoupon = RequestCoupon.objects.create(
                                                 name = request.data['name'],
                                                 store_link = request.data['store_link'],
@@ -618,6 +619,7 @@ def Request_Coupon(request):
                                                 country_id = request.data['country'],
                                                 user_id=user.id
                                                 )
+            
             if reqCoupon is not None :
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
@@ -689,7 +691,7 @@ def Shop_Now(request):
                 cop = Coupon.objects.get(id = request.data['coupon'])
                 no_user = cop.no_of_users
                 print(no_user)
-                Coupon.objects.filter(id = request.data['coupon']).update(no_of_users = no_user +1)
+                Coupon.objects.filter(id = request.data['coupon']).update(no_of_users = no_user +1, last_usage_time= datetime.datetime.utcnow().replace(tzinfo=utc))
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

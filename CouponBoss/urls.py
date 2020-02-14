@@ -50,7 +50,7 @@ urlpatterns = [
     path('apis/dc', api_views.Det_Cop, name='Det_Cop'),
     path('apis/uploadfile', api_views.uploadfile, name='uploadfile'),
     path('apis/updateProfile', api_views.updateProfile, name='updateProfile'),
-    url(r'^api/auth', api_views.password_change, name='auth'),
+    # url(r'^api/auth', api_views.password_change, name='auth'),
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),
     path('apis/userlogin', api_views.UserLogin, name='UserLogin'),
