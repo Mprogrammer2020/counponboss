@@ -220,6 +220,9 @@ def UserRegister(request):
                         token1 = Token.objects.create(user=authUser)
                         token = token1.key 
                     serialized_data = UserSerializer(existedUser)
+                    if firebase_token:
+                        existedUser.firebase_token = firebase_token
+                        existedUser.save()
                     userDetail = {'token':token, 'user': serialized_data.data }
                     return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, 'user_brands': user_brands_serialize.data, "is_registered": True}, status=status.HTTP_200_OK)
                    
