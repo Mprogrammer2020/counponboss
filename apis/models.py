@@ -66,6 +66,7 @@ class User(AbstractUser):
 
     device_id = models.TextField(max_length=255, default="")
     device_uid = models.TextField(max_length=255, default="")
+    firebase_token = models.TextField(max_length=255, default="")
 
     language_code = models.CharField(max_length=64, default='en')
     image = models.CharField(max_length=250,default="")

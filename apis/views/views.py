@@ -833,3 +833,30 @@ def Change_Country(request):
     except Exception as e:
         print(traceback.format_exc())
         return Response({"message" : str(e), "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+############################################################
+#            Update Firebase Token
+############################################################
+
+@api_view(['POST'])
+def update_firebase_token(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                result = auth_user(api_key)
+                if result == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            result.firebase_token = request.data['firebase_token']
+            result.device_type = request.data['device_type']
+            result.save()
+            user_json = UserSerializer(result)        
+            return Response({"status": "1", 'message': 'Token Updated successfully','user':user_json.data},status=status.HTTP_200_OK)
+    except Exception as e:
+        print(traceback.format_exc())
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
