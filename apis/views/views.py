@@ -433,6 +433,7 @@ def NotificationList(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
             notifications = Notification.objects.filter(receiver_id=result.id)
+            notifications.update(is_read=True)
             notifications_json = NotificationSerializer(notifications, many=True)
             return Response({"message" : "Success", "status" : "1", "Notifications": notifications_json.data}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -555,8 +556,10 @@ def Home(request):
                 data['discount'] = Decimal(data['discount'])
 
             user_data = UserSerializer(result)
+            no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
 
-            return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification']}, status=status.HTTP_201_CREATED)
+
+            return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
