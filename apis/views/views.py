@@ -179,6 +179,7 @@ def UserRegister(request):
             BrandId = request.data.get('BrandId') if request.data.get('BrandId') else None
             
             email = request.data.get('email') if request.data.get('email') else None
+            firebase_token = request.data.get('firebase_token') if request.data.get('firebase_token') else None
          
          
             
@@ -242,7 +243,8 @@ def UserRegister(request):
                                              is_staff=0,
                                              is_active=1,
                                              language_code=language_code,
-                                             country=country )
+                                             country=country,
+                                             firebase_token=firebase_token )
 
                     serialized_data = UserSerializer(authUser)
                     g = Group.objects.get(name='User')
