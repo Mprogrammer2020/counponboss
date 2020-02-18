@@ -50,6 +50,11 @@ urlpatterns = [
     path('apis/dc', api_views.Det_Cop, name='Det_Cop'),
     path('apis/uploadfile', api_views.uploadfile, name='uploadfile'),
     path('apis/updateProfile', api_views.updateProfile, name='updateProfile'),
+    path('apis/add_social', api_views.Add_Social, name='Add_Social'),
+    path('apis/edit_social', api_views.Edit_Social, name='Edit_Social'),
+    path('apis/get_social', api_views.Get_Social, name='Get_Social'),
+    path('apis/show_social', api_views.Show_social, name='Show_social'),
+    path('apis/delete_social', api_views.Delete_Social, name='Delete_Social'),
     # url(r'^api/auth', api_views.password_change, name='auth'),
     #User App Urls
     path('apis/userregister', api_views.UserRegister, name='UserRegister'),

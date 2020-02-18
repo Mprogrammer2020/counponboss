@@ -7,7 +7,6 @@ import json
 import string
 import random, pytz
 from django.utils import timezone
-
 import traceback
 from apis.models import *
 from django.views.decorators.csrf import csrf_exempt
@@ -52,14 +51,13 @@ from pyfcm import FCMNotification
 from django.core.files.storage import FileSystemStorage
 
 from django.core.paginator import Paginator,EmptyPage, PageNotAnInteger
-
+from time import strptime
 
 errorMessage = "Sorry! Something went wrong."
 addSuccessMessage = "Successfully added."
 loginSuccessMessage = "Successfully login"
 editSuccessMessage = "Successfully Edited."
 fcm_api_key = "AAAAmkEBcDo:APA91bGy8PhMQOZ-KVPGuwpZTgEZkHch1UWYIC_PiMN6j_awN2AErFqnZwi21Aoqu2FPPF1Hhh35NalwUJAIeqvuOG-3BgBpmDwqvk0oCSx65zEs6mY5X9EvSfNMVV0BTZ4iRFKj5u-T"
-
 
 #############################################################
 #           Admin Login
@@ -141,7 +139,9 @@ def AdminRegister(request):
             if email is None or email == "Null" or email == "null":
                 email = deviceId+"@couponboss.com"
             username = deviceId
-            nowTime = datetime.now()            
+            nowTime = datetime.now()  
+            tempS = str(timezone.now().time())
+            tempS = tempS[:8]          
             try:
                 existedUser = User.objects.get(device_id =deviceId)
             except:
@@ -161,7 +161,8 @@ def AdminRegister(request):
                                          date_joined= nowTime,
                                          is_superuser=0,
                                          is_staff=0,
-                                         is_active=1   )
+                                         is_active=1 ,
+                                         last_login_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')  )
                 serialized_data = UserSerializer(authUser)
                 g = Group.objects.get(name='Admin')
                 g.user_set.add(authUser)
@@ -285,7 +286,12 @@ def Add_Coupon(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-          
+
+            tempS = str(timezone.now().time())
+            tempS = tempS[:8]
+            created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
+            updated_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
+            
             coupon_detail=Coupon.objects.create(headline = request.data['headline'],
                                                         code = request.data['code'],
                                                         discount = request.data['discount'],
@@ -295,11 +301,19 @@ def Add_Coupon(request):
                                                         status = 1,
                                                         store_link = request.data['store_link'],
                                                         is_featured = request.data['is_featured'],
-                                                        title = request.data['title']
+                                                        title = request.data['title'],
+                                                        created_time = created_time,
+                                                        updated_time = updated_time
                                                         # headline_ar = request.data['headline_ar'],
                                                         # description_ar = request.data['description_ar'],
                                                       )
-            coupon_detail.expire_date=request.data['expiry_date']
+            
+            print(request.data['expiry_date'],"yyyyyyy")
+
+
+            #expiry_date = request.data['expiry_date']
+            
+            coupon_detail.expire_date =request.data['expiry_date']
             coupon_detail.save()
 
             if coupon_detail is not None:                                       
@@ -1090,9 +1104,11 @@ def SendNotification(request):
                     idList = user.device_id
                     idsArray.append(idList)
                     user_json = UserSerializer(user)
+                    tempS = str(timezone.now().time())
+                    tempS = tempS[:8]
                     if user and  user_json.data["on_off_notification"]:
                         # Notification Created
-                        notifify = Notification.objects.create(title=title, discription=description, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar)
+                        notifify = Notification.objects.create(title=title, discription=description, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar , created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S'))
 
                         notification_ids.append(notifify.id)
                         # if request.data.get('image') is not None:
@@ -1136,7 +1152,7 @@ def sendfcmnotifiction(notification_ids):
                 user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=True)
                 user_serializer = UserSerializer(user, many=True)
                 if user_serializer.data != []:
-                    idList = user_serializer.data[0]['device_id'] 
+                    idList = user_serializer.data[0]['firebase_token'] 
                     idsArray.append(idList)
             push_service = FCMNotification(api_key=fcm_api_key)
             registration_ids = idsArray
@@ -1495,12 +1511,12 @@ def Edit_Social(request):
             social =  SocialMedia.objects.filter(id=socialId)
             if social is not None:
                 
-                social_detail=SocialMedia.objects.filter(id=brandId).update(name = request.data['name'],
+                social_detail=SocialMedia.objects.filter(id=socialId).update(name = request.data['name'],
                                                                             url = request.data['url'])
 
                 if social_detail is not None:
                                 
-                    return Response({"message" : editSuccessMessage, "status" : "1", "brand": socialId}, status=status.HTTP_201_CREATED)
+                    return Response({"message" : editSuccessMessage, "status" : "1", "social": socialId}, status=status.HTTP_201_CREATED)
                 else:
                     return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)        
                        
@@ -1515,7 +1531,7 @@ def Edit_Social(request):
 ############################################################
 
 @api_view(['GET'])
-def GetSocial(request):
+def Get_Social(request):
     try:
         with transaction.atomic():
             
@@ -1533,7 +1549,7 @@ def GetSocial(request):
             social_list = SocialMedia.objects.filter(status = 1)
             if social_list is not None:
                 social_serializer = SocialMediaSerializer(social_list, many=True)
-                return Response({"message" : addSuccessMessage, "response" : obj, "status" : "1" ,"count":obj.__len__()}, status=status.HTTP_200_OK)
+                return Response({"message" : addSuccessMessage, "response" : social_serializer.data, "status" : "1" }, status=status.HTTP_200_OK)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)          
     except Exception:
@@ -1552,20 +1568,57 @@ def Show_social(request):
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
-                country_added = 0
-                SocialId = request.data.get('SocialId')
+                socialId = request.data.get('socialId')
                 check_group = user.groups.filter(name='Admin').exists()
                 if check_group == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            social = SocialMedia.objects.get(id=SocialId)
+            try:
+                print(socialId)
+                social = SocialMedia.objects.get(id = socialId)
+                print(social)
+            except: 
+                print(traceback.format_exc())
+                social=None
             if social is not None:
                 social_detail = SocialMediaSerializer(social)
                 return Response({"message" : addSuccessMessage, "status" : "1", "social": social_detail.data}, status=status.HTTP_201_CREATED)
             else:
-                return Response({"message" : "Brand Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+############################################################
+#     Delete social
+############################################################
+
+@api_view(['POST'])
+def Delete_Social(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            socialId=request.data['socialId']
+            print(socialId,"hhhhhhh")
+            del_social = SocialMedia.objects.filter(id = socialId,status=1).exists()
+            print(del_social)
+            if del_social :
+                dele=SocialMedia.objects.filter(id = socialId).update(status = 0)
+                return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

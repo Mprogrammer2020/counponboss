@@ -13,7 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ('__all__')
         
 class UserCouponLogsSerializer(serializers.ModelSerializer):
-    
+    created_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     class Meta:
         model = UserCouponLogs
         fields = ('__all__')
@@ -25,24 +25,27 @@ class BrandSerializer(serializers.ModelSerializer):
         fields = ('__all__')
 
 class ContactUsSerializer(serializers.ModelSerializer):
-    
+    created_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     class Meta:
         model = ContactUs
         fields = ('__all__')
 
 class RequestCouponSerializer(serializers.ModelSerializer):
-    
+    created_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     class Meta:
         model = RequestCoupon
         fields =('__all__')
 class NotificationSerializer(serializers.ModelSerializer):
-    
+    created_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     class Meta:
         model = Notification
         fields =('__all__')
 
 class CouponSerializer(serializers.ModelSerializer):
-    
+    expire_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+    created_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+    updated_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+    last_usage_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
     class Meta:
         model = Coupon
         fields =('__all__')

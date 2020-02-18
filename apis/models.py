@@ -4,6 +4,8 @@ from django.utils.translation import ugettext, ugettext_lazy as _
 from django.utils.timezone import utc
 import datetime
 import uuid
+from django.utils import timezone
+from time import strptime
 # Create your models here.
 
 class Country(models.Model):
@@ -71,10 +73,10 @@ class User(AbstractUser):
     language_code = models.CharField(max_length=64, default='en')
     image = models.CharField(max_length=250,default="")
     
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.last_login_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(User, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         self.last_login_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    #     super(User, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('auth_user')
@@ -91,10 +93,10 @@ class ContactUs(models.Model):
     message = models.TextField(default='')
     created_time = models.DateTimeField()
     
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(ContactUs, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    #     super(ContactUs, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('contact_us')
@@ -112,10 +114,10 @@ class RequestCoupon(models.Model):
     email = models.EmailField(max_length=255)
     created_time = models.DateTimeField()
     
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(RequestCoupon, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    #     super(RequestCoupon, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('request_coupon')
@@ -138,10 +140,10 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
     created_time = models.DateTimeField()
     
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(Notification, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    #     super(Notification, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('notification')
@@ -172,12 +174,13 @@ class Coupon(models.Model):
     is_featured = models.BooleanField(default=False)
     expire_date = models.DateTimeField(default= datetime.datetime.utcnow().replace(tzinfo=utc))
     
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-            self.updated_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-            # self.last_usage_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(Coupon, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         self.created_time = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3]
+    #         print(self.created_time,"kkk")
+    #         self.updated_time = datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+    #         # self.last_usage_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    #     super(Coupon, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('coupon')
@@ -191,10 +194,10 @@ class UserCouponLogs(models.Model):
     coupon = models.ForeignKey(Coupon, null=True, blank=True, on_delete=models.CASCADE ,related_name='uclogscoupon')
     is_used = models.IntegerField(default=0) #is_used=1--> useful, 2--> not useful, 0-->not used
     created_time = models.DateTimeField()
-    def save(self, *args, **kwargs):
-        if not self.id:
-            self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
-        super(UserCouponLogs, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     if not self.id:
+    #         self.created_time = datetime.datetime.utcnow().replace(tzinfo=utc)
+    #     super(UserCouponLogs, self).save(*args, **kwargs)
     
     class Meta:
         verbose_name = _('user_coupon_logs')
