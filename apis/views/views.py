@@ -50,6 +50,10 @@ import pdb;
 from commons.constants import *
 
 
+from decimal import Decimal
+
+
+
 errorMessage = "Sorry! Something went wrong."
 addSuccessMessage = "Successfully added."
 loginSuccessMessage = "Successfully login"
@@ -233,6 +237,8 @@ def UserRegister(request):
                     except:
                         return Response({"status" : "0", 'message':'Invalid Country'}, status=status.HTTP_404_NOT_FOUND)
                     email = is_unique_username()
+                    tempS = str(timezone.now().time())
+                    tempS = tempS[:8] 
                     authUser = User.objects.create(username=email,
                                              email=email,
                                              first_name='firstname',
@@ -247,7 +253,9 @@ def UserRegister(request):
                                              is_active=1,
                                              language_code=language_code,
                                              country=country,
-                                             firebase_token=firebase_token )
+                                             firebase_token=firebase_token ,
+                                             last_login_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
+                                             )
 
                     serialized_data = UserSerializer(authUser)
                     g = Group.objects.get(name='User')
@@ -304,6 +312,7 @@ def CouponDetails(request, id):
                 countries_ids = countries.values_list('id', flat=True)
                 selected_country = CountrySerializer(countries, many=True)
                 coupon_detail = CouponSerializer(coupon)
+                couponudiscountindecimal(coupon_detail)
                 return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data,"coupon_country": countries_ids}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Coupon Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
@@ -349,6 +358,7 @@ def filter(request):
                     coupons_id = coupons_data.values_list('coupon_id', flat=True)
                     coupons = Coupon.objects.filter(id__in=coupons_id, status=1)
                     coupon_detail = CouponSerializer(coupons, many=True)
+                    couponudiscountindecimal(coupon_detail)
                     return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
                 else:
                     return Response({"message" : "Coupon Not Found", "status" : "1"}, status=status.HTTP_400_BAD_REQUEST)
@@ -380,6 +390,7 @@ def UsedCoupon(request):
             coupons_id = usercoupons.values_list('coupon_id', flat=True)
             coupons = Coupon.objects.filter(id__in=coupons_id)
             coupon_detail = CouponSerializer(coupons, many=True)
+            couponudiscountindecimal(coupon_detail)
             return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
@@ -517,7 +528,12 @@ def getSelectedBrand(brandshash,user):
         # selected_country = CountrySerializer(countries, many=True)
         # brandshash[index]['coupon_countries'] = selected_country.data
 
-from decimal import Decimal
+def couponudiscountindecimal(couponsjson):
+    try:
+        for index, data in  enumerate(couponsjson.data):
+            data['discount'] = Decimal(data['discount'])
+    except Exception:
+        print("Something Wents Wrong")
 
 @csrf_exempt
 @api_view(['GET'])
@@ -536,7 +552,7 @@ def Home(request):
             
             featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
-
+            couponudiscountindecimal(featuredcouponsjson)
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id)
             brand_ids = userselectedbrands.values_list('brand_id', flat=True)
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
@@ -552,8 +568,7 @@ def Home(request):
             coupons = Coupon.objects.filter(status=1)
             couponsjson = CouponSerializer(coupons, many=True)
 
-            for index, data in  enumerate(couponsjson.data):
-                data['discount'] = Decimal(data['discount'])
+            couponudiscountindecimal(couponsjson)
 
             user_data = UserSerializer(result)
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
@@ -620,12 +635,15 @@ def Request_Coupon(request):
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
             user1 = User.objects.get(id=user.id)
+            tempS = str(timezone.now().time())
+            tempS = tempS[:8]
             reqCoupon = RequestCoupon.objects.create(
                                                 name = request.data['name'],
                                                 store_link = request.data['store_link'],
                                                 email = request.data['email'],
                                                 country_id = request.data['country'],
-                                                user_id=user.id
+                                                user_id=user.id,
+                                                created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
                                                 )
             
             if reqCoupon is not None :
@@ -655,12 +673,14 @@ def Contact_Us(request):
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
-                
+            tempS = str(timezone.now().time())
+            tempS = tempS[:8]
             contact_us = ContactUs.objects.create(
                                             email = request.data['email'],
                                             subject = request.data['subject'],
                                             message = request.data['message'],
-                                            user_id = user.id
+                                            user_id = user.id,
+                                            created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
                                             )
                     
             if contact_us is not None :
@@ -689,17 +709,21 @@ def Shop_Now(request):
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
-            
+
+            tempS = str(timezone.now().time())
+            tempS = tempS[:8]
             coupLog = UserCouponLogs.objects.create(
                                             user_id = user.id,
-                                            coupon_id = request.data['coupon']
+                                            coupon_id = request.data['coupon'],
+                                            created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
                                             )
                     
             if coupLog is not None :
                 cop = Coupon.objects.get(id = request.data['coupon'])
                 no_user = cop.no_of_users
                 print(no_user)
-                Coupon.objects.filter(id = request.data['coupon']).update(no_of_users = no_user +1, last_usage_time= datetime.datetime.utcnow().replace(tzinfo=utc))
+                
+                Coupon.objects.filter(id = request.data['coupon']).update(no_of_users = no_user +1, last_usage_time= datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S'))
                 return Response({"message" : addSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -726,12 +750,23 @@ def Popup_Code_Worked(request):
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
-            
-            popup_list = UserCouponLogs.objects.filter(is_used = 0)
-            if popup_list is not None:
-                coupon_serializer = UserCouponLogsSerializer(popup_list, many = True)
+            try:
+                popup_list = UserCouponLogs.objects.filter(is_used = 0,user_id = user.id)
+                
+            except:
+                popup_list = None
 
-                return Response({"message" : addSuccessMessage, "response" : coupon_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+            if popup_list is not None:
+                coupon_serializer = UserCouponLogsSerializer(popup_list,many=True)
+                coup = coupon_serializer.data
+                
+                for data in coup:
+                    coupon = Coupon.objects.filter(id = data['coupon'] , status = 1)
+                    couponss = CouponSerializer(coupon, many=True)
+                    data['coupon'] = couponss.data[0]
+                
+
+                return Response({"message" : addSuccessMessage, "response" : coup , "status" : "1"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -791,16 +826,17 @@ def Search_Brands(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
                 
-            searchBrand=request.data['searchBrand']
+            searchBrand=request.data['searchBrand'].lower()
+            print(searchBrand)
             brand = Brands.objects.filter(name__contains = searchBrand , status=1)
             if brand:
                 brand_serializer = BrandSerializer(brand, many = True)
                 brandserial = brand_serializer.data
                 getSelectedBrand(brandserial, result)
                     
-                return Response({"status": "1", 'message': 'Get successfully','data':brandserial},status=status.HTTP_200_OK)
+                return Response({"status": "1", 'message': 'Get successfully','response':brandserial},status=status.HTTP_200_OK)
             else:
-                return Response({"status": "0", 'message': 'Brand Not Found'},status=status.HTTP_404_NOT_FOUND)
+                return Response({"status": "0", 'message': 'Brand Not Found'},status=status.HTTP_200_OK)
     except Exception as e:
         print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
