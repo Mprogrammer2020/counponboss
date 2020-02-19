@@ -1155,6 +1155,7 @@ def sendfcmnotifiction(notification_ids):
                     idList = user_serializer.data[0]['firebase_token'] 
                     idsArray.append(idList)
             push_service = FCMNotification(api_key=fcm_api_key)
+            print(idsArray)
             registration_ids = idsArray
             notify = Notification.objects.get(id=notification_ids[0])
             notify_data = NotificationSerializer(notify)
@@ -1325,6 +1326,7 @@ def uploadfile(request):
                     request_id = int(request.data.get('id'))
             except:
                 request_id = None
+            print(request_id)
             if request_id is not None:
                 if request.data.get('type') == "brand":
                     file = request.FILES.get('file')
