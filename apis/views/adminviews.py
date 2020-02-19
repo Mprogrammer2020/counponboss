@@ -1100,6 +1100,7 @@ def SendNotification(request):
             brand_countries_exist = BrandCountries.objects.filter(brand_id=brandId, country_id=countryId )
             if brand_countries_exist.count() > 0:
                 for user in request.data['userId']:
+                    print("notifications")
                     user = User.objects.get(id=user)
                     idList = user.device_id
                     idsArray.append(idList)
@@ -1108,6 +1109,7 @@ def SendNotification(request):
                     tempS = tempS[:8]
                     if user and  user_json.data["on_off_notification"]:
                         # Notification Created
+                        print("notifications _created")
                         notifify = Notification.objects.create(title=title, discription=description, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar , created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S'))
 
                         notification_ids.append(notifify.id)
@@ -1116,8 +1118,7 @@ def SendNotification(request):
                         #     notifify.save(update_fields=['image'])
 
                 #Send Fcm Notification
-                pdb.set_trace()
-                if idsArray.__len__() > 0 and request.data.get('is_file') == False:
+                if idsArray.__len__() > 0 and request.data.get('is_file') == False and notification_ids.__len__() > 0:
                     sendfcmnotifiction(notification_ids)
                     
                 #     push_service = FCMNotification(api_key=fcm_api_key)
@@ -1132,7 +1133,10 @@ def SendNotification(request):
                     #result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
 
                     # print(result)
-                return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
+                    return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"Message": "User has disabled the notification", "notification": [],"status" : "1"}, status=status.HTTP_200_OK)
+
                 # else:   
                 #     return Response({"Message": "Something Occur.", "status" : "0"}, status=status.HTTP_400_BAD_REQUEST)
             else:
