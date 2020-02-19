@@ -1146,11 +1146,13 @@ def SendNotification(request):
 def sendfcmnotifiction(notification_ids):
     try:
         idsArray = []
+        print(notification_ids)
         if notification_ids.__len__() > 0:
             for notification_id in notification_ids:
                 print("ghello")      
                 user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=True)
                 user_serializer = UserSerializer(user, many=True)
+                print(user_serializer, "user_serializer")
                 if user_serializer.data != []:
                     idList = user_serializer.data[0]['firebase_token'] 
                     idsArray.append(idList)
@@ -1308,6 +1310,7 @@ def uploadfile(request):
     try:
         with transaction.atomic():  
             try:
+                print(request.data.get('id'))
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
