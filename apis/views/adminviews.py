@@ -1116,6 +1116,7 @@ def SendNotification(request):
                         #     notifify.save(update_fields=['image'])
 
                 #Send Fcm Notification
+                pdb.set_trace()
                 if idsArray.__len__() > 0 and request.data.get('is_file') == False:
                     sendfcmnotifiction(notification_ids)
                     
