@@ -1160,7 +1160,9 @@ def sendfcmnotifiction(notification_ids):
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
             data_message['click_action'] ='OPEN_ACTIVITY_1'
-            result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=notify_data.data['discription'], data_message=data_message)
+            result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=notify_data.data['discription'],message_title = notify_data.data['title'], data_message=data_message)
+
+            print(result)
 
         print(result,"gfhd")
     except Exception:
