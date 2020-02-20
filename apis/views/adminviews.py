@@ -770,14 +770,22 @@ def Add_Country(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            country_detail=Country.objects.create(name = request.data['countryName'],
-                                                    latitude = request.data['lat'],
-                                                    longitude = request.data['long']
-                                                      )
-            if country_detail is not None:
-                return Response({"message" : addSuccessMessage, "status" : "1", "country": CountrySerializer(country_detail).data["id"]}, status=status.HTTP_201_CREATED)
+
+            country_exist = Country.objects.filter(name = request.data['countryName'])
+            pdb.set_trace()
+            if country_exist is not None:
+
+                country_detail=Country.objects.create(name = request.data['countryName'],
+                                                        latitude = request.data['lat'],
+                                                        longitude = request.data['long']
+                                                          )
+                if country_detail is not None:
+                    return Response({"message" : addSuccessMessage, "status" : "1", "country": CountrySerializer(country_detail).data["id"], "country_added":0}, status=status.HTTP_201_CREATED)
+                else:
+                    return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
-                return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"message" : "Country Already Added.", "status" : "1", "country": CountrySerializer(country_detail).data["id"], "country_added":1}, status=status.HTTP_201_CREATED)
+
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
