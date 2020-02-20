@@ -783,7 +783,7 @@ def Add_Country(request):
                 else:
                     return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
-                return Response({"message" : "Country Already Added.", "status" : "1", "country": CountrySerializer(country_detail).data["id"], "country_added":1}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "Country Already Added.", "status" : "1", "country_added":1}, status=status.HTTP_201_CREATED)
 
     except Exception:
         print(traceback.format_exc())
