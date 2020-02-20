@@ -772,7 +772,7 @@ def Add_Country(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
             country_exist = Country.objects.filter(name = request.data['countryName'])
-            if country_exist is None:
+            if country_exist.count() == 0:
 
                 country_detail=Country.objects.create(name = request.data['countryName'],
                                                         latitude = request.data['lat'],
@@ -783,7 +783,7 @@ def Add_Country(request):
                 else:
                     return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
             else:
-                if country_exist is not None:
+                if country_exist.count() > 0:
                     if country_exist.first().status == 0:
                         country_exist.update(status=1)
                         add_msg = addSuccessMessage      
