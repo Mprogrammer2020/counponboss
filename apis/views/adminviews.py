@@ -788,6 +788,9 @@ def Add_Country(request):
                         country_exist.update(status=1)
                         add_msg = addSuccessMessage      
                         return Response({"message" : add_msg, "country": CountrySerializer(country_exist, many=True).data[0]["id"], "status" : "1", "country_added":0}, status=status.HTTP_201_CREATED)
+                    else:
+                        add_msg = "Country Already Added."
+                        return Response({"message" : add_msg, "status" : "1", "country_added":1}, status=status.HTTP_201_CREATED)
                 else:
                     add_msg = "Country Already Added."
                     return Response({"message" : add_msg, "status" : "1", "country_added":1}, status=status.HTTP_201_CREATED)
