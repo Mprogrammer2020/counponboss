@@ -234,7 +234,7 @@ def UserRegister(request):
                     except:
                         country = None
 
-                    delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=existedUser).delete()
+                    delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
 
                     # Added User Brands 
                     for brandid in request.data['BrandId']:
