@@ -772,7 +772,6 @@ def Add_Country(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
 
             country_exist = Country.objects.filter(name = request.data['countryName'])
-            pdb.set_trace()
             if country_exist is not None:
 
                 country_detail=Country.objects.create(name = request.data['countryName'],

@@ -884,14 +884,16 @@ def Change_Country(request):
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
             language_code = request.data['language_code']
+            change_value = ""
             countryId = request.data['countryId']
             if language_code:
                 authUser = User.objects.filter(id = user.id).update(language_code = language_code)
+                change_value = "Language"
             if countryId:
                 authUser = User.objects.filter(id = user.id).update(country_id = countryId)
-            
+                change_value = "Country"
             if authUser:
-                return Response({"status" : "1", 'message':'Changed successfully.'}, status=status.HTTP_200_OK)
+                return Response({"status" : "1", 'message': change_value+' Changed Sucessfully.'}, status=status.HTTP_200_OK)
 
             else:
                return Response({"message" : str(e), "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
