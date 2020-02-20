@@ -109,19 +109,19 @@ def UserLogin(request):
 
                     user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
                     user_brands_serialize = BrandSerializer(user_brands, many=True)
-                    # filter_user.update( language_code=language_code)
+                    filter_user.update( language_code=language_code)
                     # Set User Brands During Login
                     # Deleted Current User Brands
-                    # delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
+                    delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
 
-                    # # Added User Brands 
-                    # for brandid in request.data['BrandId']:
-                    #     brand = Brands.objects.get(id=brandid)
-                    #     if brand:
-                    #         user_brands=UserSelectedBrands.objects.create(brand = brand,
-                    #                                 user = authUser
+                    # Added User Brands 
+                    for brandid in request.data['BrandId']:
+                        brand = Brands.objects.get(id=brandid)
+                        if brand:
+                            user_brands=UserSelectedBrands.objects.create(brand = brand,
+                                                    user = authUser
 
-                    #                             )
+                                                )
                     token = ''                    
                     try:
                         user_with_token = Token.objects.get(user=authUser)
@@ -202,15 +202,14 @@ def UserRegister(request):
                 existedUser = User.objects.get(device_id =deviceId)
             except:
                 existedUser = None
+
+            # Login
             if existedUser is not None:
                 authUser = authenticate(username=existedUser.email, password=deviceId)
                 checkGroup = authUser.groups.filter(name='User').exists()
 
                 if checkGroup:
-                    filter_user =  User.objects.filter(device_id =deviceId)
-
-                    user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
-                    user_brands_serialize = BrandSerializer(user_brands, many=True)                          
+                    filter_user =  User.objects.filter(device_id =deviceId)                          
                     token = ''                    
                     try:
                         user_with_token = Token.objects.get(user=authUser)
@@ -227,9 +226,32 @@ def UserRegister(request):
                     if firebase_token:
                         existedUser.firebase_token = firebase_token
                         existedUser.save()
+                    # update country 
+                    try:
+                        country = Country.objects.get(id=countryId,status=1)
+                        existedUser.country = country
+                        existedUser.save()
+                    except:
+                        country = None
+
+                    delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=existedUser).delete()
+
+                    # Added User Brands 
+                    for brandid in request.data['BrandId']:
+                        brand = Brands.objects.get(id=brandid)
+                        if brand:
+                            user_brands=UserSelectedBrands.objects.create(brand = brand,
+                                                    user = existedUser
+
+                                                )
+
+                    user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
+                    user_brands_serialize = BrandSerializer(user_brands, many=True)
+                    
                     userDetail = {'token':token, 'user': serialized_data.data }
                     return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, 'user_brands': user_brands_serialize.data, "is_registered": True}, status=status.HTTP_200_OK)
-                   
+                
+            #  Register 
             else:
                 if BrandId is not None:
                     try:
