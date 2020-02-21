@@ -767,15 +767,16 @@ def Popup_Code_Worked(request):
                 print(api_key)
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
+                print(user)
                 check_group = user.groups.filter(name='User').exists()
                 if check_group == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
-            pdb.set_trace()
             try:
+                print("popup_list")
                 popup_list = UserCouponLogs.objects.filter(is_used = 0,user_id = user.id)
-                
+                print(popup_list)
             except:
                 popup_list = None
 
