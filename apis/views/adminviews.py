@@ -787,6 +787,9 @@ def Add_Country(request):
                     if country_exist.first().status == 0:
                         country_exist.update(status=1)
                         add_msg = addSuccessMessage      
+                        brands_country = BrandCountries.objects.filter(country_id=country_exist.first().id).exists()
+                        if brands_country:
+                            BrandCountries.objects.filter(country_id=country_exist.first().id).update(status=1)
                         return Response({"message" : add_msg, "country": CountrySerializer(country_exist, many=True).data[0]["id"], "status" : "1", "country_added":0}, status=status.HTTP_201_CREATED)
                     else:
                         add_msg = "Country Already Added."
@@ -818,9 +821,10 @@ def Delete_Country(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             countryId=request.data['id']
-            print(countryId,"hhhhhhh")
             del_cntry = Country.objects.filter(id = countryId,status=1).exists()
-            print(del_cntry)
+            brands_country = BrandCountries.objects.filter(country_id=countryId).exists()
+            if brands_country:
+                BrandCountries.objects.filter(country_id=countryId).update(status=0)
             if del_cntry :
                 dele=Country.objects.filter(id = countryId).update(status = 0)
                 return Response({"message" : deleteSuccessMessage, "status" : "1"}, status=status.HTTP_201_CREATED)
@@ -924,11 +928,12 @@ def GetBrands(request):
 
             # Added Brands Countries in List 
             for index, data in  enumerate(obj):
-                brand_country = BrandCountries.objects.filter(brand_id=data['id'])
-                country_ids = brand_country.values_list('country_id', flat=True)
-                countries = Country.objects.filter(id__in = country_ids,status = 1 )
-                selected_country = CountrySerializer(countries, many=True)
-                obj[index]['brand_countries'] = selected_country.data
+                brand_country = BrandCountries.objects.filter(brand_id=data['id'], status=1)
+                if brand_country:
+                    country_ids = brand_country.values_list('country_id', flat=True)
+                    countries = Country.objects.filter(id__in = country_ids,status = 1 )
+                    selected_country = CountrySerializer(countries, many=True)
+                    obj[index]['brand_countries'] = selected_country.data
 
 
             # Added Brands Coupons in List 
