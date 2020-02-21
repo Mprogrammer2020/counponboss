@@ -63,7 +63,7 @@ class User(AbstractUser):
     #phone_status = models.CharField(max_length=64, choices=PHONE_STATUS_CHOICES)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, null=True, blank=True)
     on_off_notification = models.BooleanField(max_length=64,default=True)
-    last_login_time = models.DateTimeField()
+    last_login_time = models.DateTimeField(default= datetime.datetime.utcnow().replace(tzinfo=utc))
     device_type = models.CharField(max_length=10, default="")
 
     device_id = models.TextField(max_length=255, default="")
