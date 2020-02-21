@@ -786,10 +786,11 @@ def Popup_Code_Worked(request):
                 
                 for data in coup:
                     coupon = Coupon.objects.filter(id = data['coupon'] , status = 1)
-                    couponss = CouponSerializer(coupon, many=True)
-                    data['coupon'] = couponss.data[0]
+                    if coupon is not None:
+                        couponss = CouponSerializer(coupon, many=True)
+                        data['coupon'] = couponss.data[0]
                 
-
+                print(coup)
                 return Response({"message" : addSuccessMessage, "response" : coup , "status" : "1"}, status=status.HTTP_200_OK)
             else:
                 return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
