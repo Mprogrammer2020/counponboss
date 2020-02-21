@@ -76,4 +76,9 @@ urlpatterns = [
     path('apis/change_country',api_views.Change_Country, name='Change_Country'),
     path('apis/add_delete_brandsinhome',api_views.add_delete_brandsinhome, name='add_delete_brandsinhome'),
     path('apis/updateFirebaseToken', api_views.update_firebase_token, name='update_firebase_token'),
+    path('terms_conditions', api_views.Terms_Conditions),
+    path('about_us', api_views.About_Us),
+    path('faq', api_views.FAQ),
+    path('privacy_policy', api_views.Privacy_Policy),
+    path('help', api_views.Help),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

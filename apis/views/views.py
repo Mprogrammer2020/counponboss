@@ -51,7 +51,7 @@ from commons.constants import *
 
 
 from decimal import Decimal
-
+from django.shortcuts import render
 
 
 errorMessage = "Sorry! Something went wrong."
@@ -928,3 +928,26 @@ def update_firebase_token(request):
     except Exception as e:
         print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+
+
+#########################################################
+#                 method for term and conditions
+#########################################################
+
+def Terms_Conditions(request):
+    return render(request, "term&conditions.html")
+
+def About_Us(request):
+    return render(request, "aboutUs.html")
+
+def FAQ(request):
+    return render(request, "faq.html")
+
+def Privacy_Policy(request):
+    return render(request, "privacypolicy.html")
+
+def Help(request):
+    return render(request, "help.html")
+
