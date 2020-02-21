@@ -1140,6 +1140,9 @@ def SendNotification(request):
                         #     notifify.save(update_fields=['image'])
 
                 #Send Fcm Notification
+
+
+                print(notification_ids)
                 if idsArray.__len__() > 0 and request.data.get('is_file') == False and notification_ids.__len__() > 0:
                     sendfcmnotifiction(notification_ids)
                     
@@ -1154,7 +1157,7 @@ def SendNotification(request):
                     
                     #result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
 
-                    # print(result)
+                    print(notification_ids)
                     return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
                 else:
                     return Response({"Message": "User has disabled the notification", "notification": [],"status" : "1"}, status=status.HTTP_200_OK)
@@ -1350,6 +1353,7 @@ def uploadfile(request):
 
             try:
                 if request.data.get('type') == "notifications":
+                    pdb.set_trace()
                     is_array = isinstance(request.data.get('id').split(','), list)
                     request_id = request.data.get('id').split(',')
                 else:
@@ -1535,20 +1539,24 @@ def Edit_Social(request):
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
-                country_added = 0
+                print(user)
                 socialId = request.data['socialId']
+                print(socialId)
                 check_group = user.groups.filter(name='Admin').exists()
+                print(check_group,"group")
                 if check_group == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             social =  SocialMedia.objects.filter(id=socialId)
+            print(social,"hhhhh")
             if social is not None:
                 
                 social_detail=SocialMedia.objects.filter(id=socialId).update(name = request.data['name'],
                                                                             url = request.data['url'])
 
                 if social_detail is not None:
+                    print("hjfgbfj")
                                 
                     return Response({"message" : editSuccessMessage, "status" : "1", "social": socialId}, status=status.HTTP_201_CREATED)
                 else:
