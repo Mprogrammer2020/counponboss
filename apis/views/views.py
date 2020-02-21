@@ -772,6 +772,7 @@ def Popup_Code_Worked(request):
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            pdb.set_trace()
             try:
                 popup_list = UserCouponLogs.objects.filter(is_used = 0,user_id = user.id)
                 
