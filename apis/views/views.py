@@ -600,8 +600,8 @@ def Home(request):
 
                 couponudiscountindecimal(couponsjson)
 
-                user_data = UserSerializer(result)
-                no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
+            user_data = UserSerializer(result)
+            no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
 
 
                 return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
