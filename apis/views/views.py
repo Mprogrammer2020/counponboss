@@ -572,6 +572,7 @@ def Home(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
+            pdb.set_trace()
             featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
@@ -911,6 +912,7 @@ def Change_Country(request):
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+                
             language_code = request.data['language_code']
             change_value = ""
             countryId = request.data['countryId']
