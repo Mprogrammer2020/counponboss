@@ -605,7 +605,7 @@ def Home(request):
 
                 return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
             else:
-                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":{}, "couponslist": {}, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":[], "couponslist": [], "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
