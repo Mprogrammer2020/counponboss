@@ -586,7 +586,7 @@ def Home(request):
             brand = Brands.objects.filter(id__in = brandc,status=1)
             print("brands count")
             print(brand.count())
-            
+
             user_data = UserSerializer(result)
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
             if brand.count() > 0:
@@ -923,6 +923,7 @@ def Change_Country(request):
             if countryId:
                 authUser = User.objects.filter(id = user.id).update(country_id = countryId)
                 change_value = "Country"
+            print(authUser)
             if authUser:
                 return Response({"status" : "1", 'message': change_value+' Changed Sucessfully.'}, status=status.HTTP_200_OK)
 
