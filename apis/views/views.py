@@ -656,7 +656,7 @@ def Brands_List(request):
             
                 return Response({"message" : addSuccessMessage, "response" : brand_serializer, "status" : "1"}, status=status.HTTP_200_OK)
             else:
-                return Response({"message" : "brand not exist", "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"message" : "brand not exist", "response" : [], "status" : "1"}, status=status.HTTP_200_OK)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
