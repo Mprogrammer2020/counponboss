@@ -582,10 +582,9 @@ def Home(request):
 
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
             usedbrandsjson = BrandSerializer(brands, many=True)
-
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
-            if brand:
+            if brand.count() > 0:
             # brandslist = Brands.objects.filter(status=1)
             # print(brandslist)
             # brandsjson = BrandSerializer(brandslist, many=True)
@@ -594,16 +593,18 @@ def Home(request):
                 brandshash = brandsjson.data
                 getSelectedBrand(brandshash, result)
 
-            coupons = Coupon.objects.filter(status=1)
-            couponsjson = CouponSerializer(coupons, many=True)
+                coupons = Coupon.objects.filter(status=1)
+                couponsjson = CouponSerializer(coupons, many=True)
 
-            couponudiscountindecimal(couponsjson)
+                couponudiscountindecimal(couponsjson)
 
-            user_data = UserSerializer(result)
-            no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
+                user_data = UserSerializer(result)
+                no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
 
 
-            return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":{}, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
