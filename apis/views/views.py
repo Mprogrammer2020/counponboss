@@ -572,7 +572,6 @@ def Home(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            pdb.set_trace()
             featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
@@ -593,7 +592,7 @@ def Home(request):
                 brandsjson = BrandSerializer(brand, many = True)
 
                 brandshash = brandsjson.data
-            getSelectedBrand(brandshash, result)
+                getSelectedBrand(brandshash, result)
 
             coupons = Coupon.objects.filter(status=1)
             couponsjson = CouponSerializer(coupons, many=True)
