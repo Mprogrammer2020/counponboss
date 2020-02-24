@@ -575,14 +575,16 @@ def Home(request):
             featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
-            userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id)
+            brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
+            
+            userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id,brand_id__in=brandc)
             brand_ids = userselectedbrands.values_list('brand_id', flat=True)
 
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
             usedbrandsjson = BrandSerializer(brands, many=True)
 
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
-            brand = Brands.objects.filter(id__in = brandc)
+            brand = Brands.objects.filter(id__in = brandc,status=1)
             if brand:
             # brandslist = Brands.objects.filter(status=1)
             # print(brandslist)
@@ -643,7 +645,7 @@ def Brands_List(request):
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
                 
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
-            brand = Brands.objects.filter(id__in = brandc)
+            brand = Brands.objects.filter(id__in = brandc,status=1)
             print(brandc)
             if brand:
                 #brand_list = Brands.objects.filter(status=1)
