@@ -81,4 +81,5 @@ urlpatterns = [
     path('faq', api_views.FAQ),
     path('privacy_policy', api_views.Privacy_Policy),
     path('help', api_views.Help),
+    path('apis/selectBrand', api_views.Select_Brands, name='Select_Brands'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -180,7 +180,7 @@ def UserRegister(request):
 
             countryId = request.data.get('countryId') if request.data.get('countryId') else None
             
-            BrandId = request.data.get('BrandId') if request.data.get('BrandId') else None
+            # BrandId = request.data.get('BrandId') if request.data.get('BrandId') else None
             
             email = request.data.get('email') if request.data.get('email') else None
             firebase_token = request.data.get('firebase_token') if request.data.get('firebase_token') else None
@@ -234,71 +234,69 @@ def UserRegister(request):
                     except:
                         country = None
 
-                    delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
+                    # delete_userbrands = UserSelectedBrands.objects.filter(user_id__in=filter_user).delete()
 
                     # Added User Brands 
-                    for brandid in request.data['BrandId']:
-                        brand = Brands.objects.get(id=brandid)
-                        if brand:
-                            user_brands=UserSelectedBrands.objects.create(brand = brand,
-                                                    user = existedUser
+                    # for brandid in request.data['BrandId']:
+                    #     brand = Brands.objects.get(id=brandid)
+                    #     if brand:
+                    #         user_brands=UserSelectedBrands.objects.create(brand = brand,
+                    #                                 user = existedUser
 
-                                                )
+                    #                             )
 
-                    user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
-                    user_brands_serialize = BrandSerializer(user_brands, many=True)
+                    # user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
+                    # user_brands_serialize = BrandSerializer(user_brands, many=True)
                     
                     userDetail = {'token':token, 'user': serialized_data.data }
-                    return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, 'user_brands': user_brands_serialize.data, "is_registered": True}, status=status.HTTP_200_OK)
+                    return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, "is_registered": True}, status=status.HTTP_200_OK)
                 
             #  Register 
             else:
-                if BrandId is not None:
-                    try:
-                        country = Country.objects.get(id=countryId,status=1)
-                    except:
-                        return Response({"status" : "0", 'message':'Invalid Country'}, status=status.HTTP_404_NOT_FOUND)
-                    email = is_unique_username()
-                    tempS = str(timezone.now().time())
-                    tempS = tempS[:8] 
-                    authUser = User.objects.create(username=email,
-                                             email=email,
-                                             first_name='firstname',
-                                             last_name='',
-                                             password=make_password(deviceId),
-                                             device_type=deviceType,
-                                             device_id=deviceId,
-                                             device_uid= deviceId,
-                                             date_joined= nowTime,
-                                             is_superuser=0,
-                                             is_staff=0,
-                                             is_active=1,
-                                             language_code=language_code,
-                                             country=country,
-                                             firebase_token=firebase_token ,
-                                             last_login_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
-                                             )
+                try:
+                    country = Country.objects.get(id=countryId,status=1)
+                except:
+                    return Response({"status" : "0", 'message':'Invalid Country'}, status=status.HTTP_404_NOT_FOUND)
+                email = is_unique_username()
+                tempS = str(timezone.now().time())
+                tempS = tempS[:8] 
+                authUser = User.objects.create(username=email,
+                                            email=email,
+                                            first_name='firstname',
+                                            last_name='',
+                                            password=make_password(deviceId),
+                                            device_type=deviceType,
+                                            device_id=deviceId,
+                                            device_uid= deviceId,
+                                            date_joined= nowTime,
+                                            is_superuser=0,
+                                            is_staff=0,
+                                            is_active=1,
+                                            language_code=language_code,
+                                            country=country,
+                                            firebase_token=firebase_token ,
+                                            last_login_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
+                                            )
 
-                    serialized_data = UserSerializer(authUser)
-                    g = Group.objects.get(name='User')
-                    g.user_set.add(authUser)
+                serialized_data = UserSerializer(authUser)
+                g = Group.objects.get(name='User')
+                g.user_set.add(authUser)
 
-                    # Added User Brands 
-                    for brandid in request.data['BrandId']:
-                        brand = Brands.objects.get(id=brandid)
-                        if brand:
+                # Added User Brands 
+                # for brandid in request.data['BrandId']:
+                #     brand = Brands.objects.get(id=brandid)
+                #     if brand:
 
-                            user_brands=UserSelectedBrands.objects.create(brand = brand,
-                                                    user = authUser
+                #         user_brands=UserSelectedBrands.objects.create(brand = brand,
+                #                                 user = authUser
 
-                                                )
-                    token = Token.objects.create(user=authUser)  
-                    filter_user =  User.objects.filter(device_id =deviceId)  
-                    user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
-                    user_brands_serialize = BrandSerializer(user_brands, many=True)                       
-                    userDetail = {'token':token.key, 'user': serialized_data.data}
-                    return Response({"status" : "1", 'message':'User has been successfully registered.', 'data' : userDetail, 'user_brands': user_brands_serialize.data, "is_registered": False}, status=status.HTTP_200_OK)      
-                return Response({'status':0, 'message':"Please Add Brand."}, status=status.HTTP_400_BAD_REQUEST)                     
+                #                             )
+                token = Token.objects.create(user=authUser)  
+                filter_user =  User.objects.filter(device_id =deviceId)  
+                # user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id__in=filter_user).values_list('brand', flat=True))
+                # user_brands_serialize = BrandSerializer(user_brands, many=True)                       
+                userDetail = {'token':token.key, 'user': serialized_data.data}
+                return Response({"status" : "1", 'message':'User has been successfully registered.', 'data' : userDetail, "is_registered": False}, status=status.HTTP_200_OK)                          
     except Exception as e:
         print(traceback.format_exc())
         return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -566,6 +564,8 @@ def Home(request):
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 print(api_key)
                 result = auth_user(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
                 if result == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
@@ -577,14 +577,19 @@ def Home(request):
             couponudiscountindecimal(featuredcouponsjson)
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id)
             brand_ids = userselectedbrands.values_list('brand_id', flat=True)
+
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
             usedbrandsjson = BrandSerializer(brands, many=True)
 
-            brandslist = Brands.objects.filter(status=1)
-            print(brandslist)
-            brandsjson = BrandSerializer(brandslist, many=True)
+            brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
+            brand = Brands.objects.filter(id__in = brandc)
+            if brand:
+            # brandslist = Brands.objects.filter(status=1)
+            # print(brandslist)
+            # brandsjson = BrandSerializer(brandslist, many=True)
+                brandsjson = BrandSerializer(brand, many = True)
 
-            brandshash = brandsjson.data
+                brandshash = brandsjson.data
             getSelectedBrand(brandshash, result)
 
             coupons = Coupon.objects.filter(status=1)
@@ -626,11 +631,28 @@ def Countries_List(request):
 def Brands_List(request):
     try:
         with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                    
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+                
+            brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
+            brand = Brands.objects.filter(id__in = brandc)
+            print(brandc)
+            if brand:
+                #brand_list = Brands.objects.filter(status=1)
+                
+                brand_serializer = BrandSerializer(brand, many = True).data
             
-            brand_list = Brands.objects.filter(status=1)
-            brand_serializer = BrandSerializer(brand_list, many = True)
-            return Response({"message" : addSuccessMessage, "response" : brand_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
-
+                return Response({"message" : addSuccessMessage, "response" : brand_serializer, "status" : "1"}, status=status.HTTP_200_OK)
+            else:
+                return Response({"message" : "brand not exist", "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -789,6 +811,7 @@ def Popup_Code_Worked(request):
                     if coupon is not None:
                         couponss = CouponSerializer(coupon, many=True)
                         data['coupon'] = couponss.data[0]
+                        
                 
                 print(coup)
                 return Response({"message" : addSuccessMessage, "response" : coup , "status" : "1"}, status=status.HTTP_200_OK)
@@ -853,7 +876,7 @@ def Search_Brands(request):
                 
             searchBrand=request.data['searchBrand'].lower()
             print(searchBrand)
-            brand = Brands.objects.filter(name__contains = searchBrand , status=1)
+            brand = Brands.objects.filter(name__icontains = searchBrand , status=1)
             if brand:
                 brand_serializer = BrandSerializer(brand, many = True)
                 brandserial = brand_serializer.data
@@ -954,3 +977,31 @@ def Privacy_Policy(request):
 def Help(request):
     return render(request, "help.html")
 
+@api_view(['POST'])
+def Select_Brands(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                    
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            print(user.id)
+            for brandid in request.data['BrandId']:
+                        brand = Brands.objects.get(id=brandid)
+                        if brand:
+                            user_brands=UserSelectedBrands.objects.create(brand_id = brand.id,
+                                                    user_id = user.id
+
+                                                )  
+            user_brands =  Brands.objects.filter(id__in=UserSelectedBrands.objects.filter(user_id=user.id).values_list('brand', flat=True))
+            user_brands_serializer = BrandSerializer(user_brands, many=True)    
+            return Response({"status": "1", 'message': 'add successfully','brand':user_brands_serializer.data},status=status.HTTP_200_OK)
+    except Exception as e:
+        print(traceback.format_exc())
+        return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
