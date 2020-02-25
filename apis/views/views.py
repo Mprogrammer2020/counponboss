@@ -579,11 +579,15 @@ def Home(request):
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
             usedbrandsjson = BrandSerializer(brands, many=True)
             
-            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
+            if brand_ids.count() > 0:
+                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
+            else:
+                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
             
-            brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
+            # brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
 
             user_data = UserSerializer(result)
@@ -596,8 +600,11 @@ def Home(request):
 
                 brandshash = brandsjson.data
                 getSelectedBrand(brandshash, result)
-
-                coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
+                if brand_ids.count() > 0:
+                    coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
+                else:
+                    coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+                    
                 couponsjson = CouponSerializer(coupons, many=True)
 
                 couponudiscountindecimal(couponsjson)
