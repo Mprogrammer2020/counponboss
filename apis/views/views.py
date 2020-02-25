@@ -1004,6 +1004,7 @@ def Select_Brands(request):
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
             print(user.id)
+            delete_userbrands = UserSelectedBrands.objects.filter(user_id=user.id).delete()
             for brandid in request.data['BrandId']:
                         brand = Brands.objects.get(id=brandid)
                         if brand:
