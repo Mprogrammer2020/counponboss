@@ -571,6 +571,11 @@ def Home(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            social_list = SocialMedia.objects.filter(status=1)
+            if social_list is not None:
+                social_serializer = SocialMediaSerializer(social_list, many = True)
+            else:
+                social_serializer = None
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id,brand_id__in=brandc)
@@ -609,9 +614,9 @@ def Home(request):
 
                 couponudiscountindecimal(couponsjson)
 
-                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications,'sociallinks':social_serializer.data}, status=status.HTTP_201_CREATED)
             else:
-                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":[], "couponslist": [], "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":[], "couponslist": [], "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications,'sociallinks':[]}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
