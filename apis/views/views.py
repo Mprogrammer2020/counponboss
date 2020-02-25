@@ -572,7 +572,7 @@ def Home(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
+            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
@@ -584,8 +584,6 @@ def Home(request):
             usedbrandsjson = BrandSerializer(brands, many=True)
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
-            print("brands count")
-            print(brand.count())
 
             user_data = UserSerializer(result)
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
@@ -598,7 +596,7 @@ def Home(request):
                 brandshash = brandsjson.data
                 getSelectedBrand(brandshash, result)
 
-                coupons = Coupon.objects.filter(status=1)
+                coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
                 couponsjson = CouponSerializer(coupons, many=True)
 
                 couponudiscountindecimal(couponsjson)

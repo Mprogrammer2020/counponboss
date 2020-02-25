@@ -1664,3 +1664,27 @@ def Delete_Social(request):
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def GetUsersByCountry(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            usergroups = Group.objects.filter(name='User')
+            users = usergroups.values_list('user', flat=True)
+            users_list = User.objects.filter(id__in = users, country=request.data["countryId"])
+            users_serializer = UserSerializer(users_list, many = True)
+            return Response({"message" : addSuccessMessage, "response" : users_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)        
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
