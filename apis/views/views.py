@@ -652,7 +652,7 @@ def Brands_List(request):
             except:
                 return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
                 
-            brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id',status=1)
+            brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
             print(brandc)
             if brand:
