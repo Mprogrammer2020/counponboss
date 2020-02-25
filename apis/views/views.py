@@ -571,10 +571,6 @@ def Home(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-            
-            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
-            featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
-            couponudiscountindecimal(featuredcouponsjson)
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id,brand_id__in=brandc)
@@ -582,6 +578,11 @@ def Home(request):
 
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
             usedbrandsjson = BrandSerializer(brands, many=True)
+            
+            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
+            featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
+            couponudiscountindecimal(featuredcouponsjson)
+            
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
 
@@ -596,7 +597,7 @@ def Home(request):
                 brandshash = brandsjson.data
                 getSelectedBrand(brandshash, result)
 
-                coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+                coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
                 couponsjson = CouponSerializer(coupons, many=True)
 
                 couponudiscountindecimal(couponsjson)
