@@ -1011,3 +1011,41 @@ def Select_Brands(request):
     except Exception as e:
         print(traceback.format_exc())
         return Response({"message": errorMessage, "status": "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+############################################################
+#     Get Social links
+############################################################
+
+@api_view(['GET'])
+def GetSocial(request):
+    try:
+        with transaction.atomic():
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                print(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='User').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                return Response({"message": "Session expired!! please login again", "status": "0"},status=status.HTTP_401_UNAUTHORIZED)
+            #page_num = request.GET['page_num']
+            social_list = SocialMedia.objects.filter(status=1)
+            # paginator = Paginator(countries_list, 2)
+            # countries_list = None
+            # try:
+            #     countries_list = paginator.page(page_num)
+            # except:
+            #     countries_list = None
+            
+            if social_list is not None:
+                social_serializer = SocialMediaSerializer(social_list, many = True)
+                return Response({"message" : addSuccessMessage, "response" : social_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)
+
+            else:
+                return Response({"message" : errorMessage,"response":[], "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)          
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

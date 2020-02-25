@@ -82,4 +82,5 @@ urlpatterns = [
     path('privacy_policy', api_views.Privacy_Policy),
     path('help', api_views.Help),
     path('apis/selectBrand', api_views.Select_Brands, name='Select_Brands'),
+    path('apis/getSocial', api_views.GetSocial, name='GetSocial'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
