@@ -883,6 +883,8 @@ def Search_Brands(request):
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 print(api_key)
                 result = auth_user(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
                 if result == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
@@ -891,7 +893,8 @@ def Search_Brands(request):
                 
             searchBrand=request.data['searchBrand'].lower()
             print(searchBrand)
-            brand = Brands.objects.filter(name__icontains = searchBrand , status=1)
+            brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
+            brand = Brands.objects.filter(id__in = brandc,name__icontains = searchBrand , status=1)
             if brand:
                 brand_serializer = BrandSerializer(brand, many = True)
                 brandserial = brand_serializer.data
