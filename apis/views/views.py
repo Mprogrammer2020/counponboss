@@ -939,7 +939,7 @@ def Change_Country(request):
                 change_value = "Location"
             print(authUser)
             if authUser:
-                return Response({"status" : "1", 'message': change_value+' Changed Sucessfully.'}, status=status.HTTP_200_OK)
+                return Response({"status" : "1", 'message': change_value+' Changed successfully.'}, status=status.HTTP_200_OK)
 
             else:
                return Response({"message" : str(e), "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
