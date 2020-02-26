@@ -1140,25 +1140,15 @@ def SendNotification(request):
                         #     notifify.save(update_fields=['image'])
 
                 #Send Fcm Notification
-
-
                 print(notification_ids)
                 if idsArray.__len__() > 0 and request.data.get('is_file') == False and notification_ids.__len__() > 0:
                     sendfcmnotifiction(notification_ids)
-                    
-                #     push_service = FCMNotification(api_key=fcm_api_key)
-                #     registration_ids = idsArray
-
-                #     data_message = {
-                #             "message_title" :title ,
-                #             "message_body" : description,
-                           
-                        
-                    
-                    #result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=description, data_message=data_message)
-
                     print(notification_ids)
                     return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
+                
+                elif idsArray.__len__() > 0 and request.data.get('is_file') == True and notification_ids.__len__() > 0:
+                    return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
+                
                 else:
                     return Response({"Message": "User has disabled the notification", "notification": [],"status" : "1"}, status=status.HTTP_200_OK)
 
@@ -1353,7 +1343,6 @@ def uploadfile(request):
 
             try:
                 if request.data.get('type') == "notifications":
-                    pdb.set_trace()
                     is_array = isinstance(request.data.get('id').split(','), list)
                     request_id = request.data.get('id').split(',')
                 else:
