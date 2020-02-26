@@ -408,7 +408,7 @@ def UsedCoupon(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             usercoupons = UserCouponLogs.objects.filter(user_id= result.id, is_used=1 )
             coupons_id = usercoupons.values_list('coupon_id', flat=True)
-            coupons = Coupon.objects.filter(id__in=coupons_id)
+            coupons = Coupon.objects.filter(id__in=coupons_id).order_by('-created_time')
             coupon_detail = CouponSerializer(coupons, many=True)
             couponudiscountindecimal(coupon_detail)
             return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
