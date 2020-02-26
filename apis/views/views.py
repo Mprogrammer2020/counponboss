@@ -463,7 +463,7 @@ def NotificationList(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            notifications = Notification.objects.filter(receiver_id=result.id)
+            notifications = Notification.objects.filter(receiver_id=result.id).order_by('-created_time')
             notifications.update(is_read=True)
             notifications_json = NotificationSerializer(notifications, many=True)
             return Response({"message" : "Success", "status" : "1", "Notifications": notifications_json.data}, status=status.HTTP_201_CREATED)
