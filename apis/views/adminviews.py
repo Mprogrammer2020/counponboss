@@ -289,6 +289,7 @@ def Add_Coupon(request):
 
             tempS = str(timezone.now().time())
             tempS = tempS[:8]
+            print(tempS)
             created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
             updated_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
             
@@ -1143,7 +1144,7 @@ def SendNotification(request):
                 print(notification_ids)
                 if idsArray.__len__() > 0 and request.data.get('is_file') == False and notification_ids.__len__() > 0:
                     sendfcmnotifiction(notification_ids)
-                    print(notification_ids)
+                    print(notification_ids,"jjjjj")
                     return Response({"Message": "Notification Send Successfully.", "notification": notification_ids,"status" : "1"}, status=status.HTTP_200_OK)
                 
                 elif idsArray.__len__() > 0 and request.data.get('is_file') == True and notification_ids.__len__() > 0:
@@ -1166,13 +1167,12 @@ def SendNotification(request):
 def sendfcmnotifiction(notification_ids):
     try:
         idsArray = []
-        print(notification_ids)
+        print(notification_ids,"hh")
         if notification_ids.__len__() > 0:
             for notification_id in notification_ids:
                 print("ghello")      
                 user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=True)
                 user_serializer = UserSerializer(user, many=True)
-                print(user_serializer, "user_serializer")
                 if user_serializer.data != []:
                     idList = user_serializer.data[0]['firebase_token'] 
                     idsArray.append(idList)
@@ -1184,10 +1184,9 @@ def sendfcmnotifiction(notification_ids):
             data_message = notify_data.data
             data_message['click_action'] ='OPEN_ACTIVITY_1'
             result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=notify_data.data['discription'],message_title = notify_data.data['title'], data_message=data_message)
+            print(result,"ff")
+        
 
-            print(result)
-
-        print(result,"gfhd")
     except Exception:
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
