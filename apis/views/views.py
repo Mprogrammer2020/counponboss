@@ -936,7 +936,7 @@ def Change_Country(request):
                 change_value = "Language"
             if countryId:
                 authUser = User.objects.filter(id = user.id).update(country_id = countryId)
-                change_value = "Country"
+                change_value = "Location"
             print(authUser)
             if authUser:
                 return Response({"status" : "1", 'message': change_value+' Changed Sucessfully.'}, status=status.HTTP_200_OK)
