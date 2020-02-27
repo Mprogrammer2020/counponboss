@@ -294,19 +294,26 @@ def Add_Coupon(request):
             updated_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
             
             coupon_detail=Coupon.objects.create(headline = request.data['headline'],
+                                                        headline_ar = request.data['headline_ar'],
                                                         code = request.data['code'],
+                                                        code_ar = request.data['code_ar'],
                                                         discount = request.data['discount'],
+                                                        discount_ar = request.data['discount_ar'],
                                                         description = request.data['description'],
+                                                        description_ar = request.data['description_ar'],
                                                         brand_id = request.data['brand'],
                                                         video_link = request.data['video_link'],
+                                                        video_link_ar = request.data['video_link_ar'],
                                                         status = 1,
                                                         store_link = request.data['store_link'],
+                                                        store_link_ar = request.data['store_link_ar'],
                                                         is_featured = request.data['is_featured'],
                                                         title = request.data['title'],
+                                                        title_ar = request.data['title_ar'],
                                                         created_time = created_time,
                                                         updated_time = updated_time
-                                                        # headline_ar = request.data['headline_ar'],
-                                                        # description_ar = request.data['description_ar'],
+                                                        
+                                                        
                                                       )
             
             print(request.data['expiry_date'],"yyyyyyy")
@@ -364,18 +371,24 @@ def Edit_Coupon(request):
             if coupon1:
                                 
                 coupon_update = Coupon.objects.filter(id = request.data['coupon_id']).update(headline = request.data['headline'],
+                                                        headline_ar = request.data['headline_ar'],
                                                         code = request.data['code'],
+                                                        code_ar = request.data['code_ar'],
                                                         discount = request.data['discount'],
+                                                        discount_ar = request.data['discount_ar'],
                                                         description = request.data['description'],
+                                                        description_ar = request.data['description_ar'],
                                                         brand_id = request.data['brand'],
                                                         video_link = request.data['video_link'],
+                                                        video_link_ar = request.data['video_link_ar'],
                                                         status = 1,
                                                         store_link = request.data['store_link'],
+                                                        store_link_ar = request.data['store_link_ar'],
                                                         is_featured = request.data['is_featured'],
-                                                        title = request.data['title']
+                                                        title = request.data['title'],
+                                                        title_ar = request.data['title_ar'],
+                                                        expire_date =request.data['expiry_date']
 
-                                                        # headline_ar = request.data['headline_ar'],
-                                                        # description_ar = request.data['description_ar'],
                                                         )
                 if coupon_update is not None:
                     delete_coupon_countries = CouponCountries.objects.filter(coupon_id=coupon_id).delete()
@@ -599,6 +612,7 @@ def Add_Brands(request):
             if len(request.data['country']) > 0 : 
                               
                 brand_detail=Brands.objects.create(name = request.data['name'],
+                                                    name_ar = request.data['name_ar'],
                                                 url = request.data['website_url'])
                     
                 if brand_detail is not None:
@@ -649,6 +663,7 @@ def Edit_Brands(request):
             if brand is not None:
                 if len(request.data['country']) > 0 :
                     brand_detail=Brands.objects.filter(id=brandId).update(name = request.data['name'],
+                                                    name_ar = request.data['name_ar'],
                                                     url = request.data['website_url'])
 
                     if brand_detail is not None:
