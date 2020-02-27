@@ -930,16 +930,21 @@ def Change_Country(request):
                 
             language_code = request.data['language_code']
             change_value = ""
+            
             countryId = request.data['countryId']
             if language_code:
                 authUser = User.objects.filter(id = user.id).update(language_code = language_code)
                 change_value = "Language"
+                langu = User.objects.get(id = user.id)
+                lang_code = langu.language_code
             if countryId:
                 authUser = User.objects.filter(id = user.id).update(country_id = countryId)
                 change_value = "Location"
+                langu = User.objects.get(id = user.id)
+                lang_code = langu.language_code
             print(authUser)
             if authUser:
-                return Response({"status" : "1", 'message': change_value+' Changed successfully.'}, status=status.HTTP_200_OK)
+                return Response({"status" : "1", 'message': change_value+' Changed successfully.','language':lang_code}, status=status.HTTP_200_OK)
 
             else:
                return Response({"message" : str(e), "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR) 
