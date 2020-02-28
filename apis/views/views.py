@@ -584,10 +584,10 @@ def Home(request):
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
             usedbrandsjson = BrandSerializer(brands, many=True)
             
-            if brand_ids.count() > 0:
-                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
-            else:
-                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+            # if brand_ids.count() > 0:
+            #     featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+            # else:
+            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
 
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
