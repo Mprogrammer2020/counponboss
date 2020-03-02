@@ -1145,18 +1145,20 @@ def SendNotification(request):
                     user_json = UserSerializer(user)
                     tempS = str(timezone.now().time())
                     tempS = tempS[:8]
+                    
                     if user and  user_json.data["on_off_notification"]:
                         # Notification Created
                         print("notifications _created")
                         notifify = Notification.objects.create(title=title, discription=description, brand= brand, country=country, receiver=user , discription_ar = description_ar , title_ar = title_ar , created_time = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S'))
 
                         notification_ids.append(notifify.id)
+                     
                         # if request.data.get('image') is not None:
                         #     notifify.image= request.data.get('image')               
                         #     notifify.save(update_fields=['image'])
 
                 #Send Fcm Notification
-                print(notification_ids)
+                print(notification_ids,"ids send ")
                 if idsArray.__len__() > 0 and request.data.get('is_file') == False and notification_ids.__len__() > 0:
                     sendfcmnotifiction(notification_ids)
                     print(notification_ids,"jjjjj")
@@ -1179,6 +1181,51 @@ def SendNotification(request):
 
 
 
+# def sendfcmnotifiction(notification_ids):
+#     try:
+#         idsArray = []
+#         notification_ids_ios = []
+#         notification_ids_android = []
+#         print(notification_ids,"hh")
+#         if notification_ids.__len__() > 0:
+#             for notification_id in notification_ids:
+#                 print("ghello")      
+#                 user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=True)
+#                 user_serializer = UserSerializer(user, many=True)
+#                 if user_serializer.data != []:
+#                     idList = user_serializer.data[0]['firebase_token'] 
+#                     if  user_serializer.data[0]['device_type'] == "iOS":
+#                         print(idList,"ios")
+#                         notification_ids_ios.append(idList)
+#                     else:
+#                         print()
+#                         notification_ids_android.append(idList)
+#             push_service = FCMNotification(api_key=fcm_api_key)
+#             notify = Notification.objects.get(id=notification_ids[0])
+#             notify_data = NotificationSerializer(notify)
+#             data_message = notify_data.data
+#             image_i = "http://192.168.2.57:8000"+notify_data.data['image']
+#             print(image_i)
+#             data_message['click_action'] ='OPEN_ACTIVITY_1'
+#             #data_message['urlImageString'] = image_i
+#             data_message['category'] = 'CustomSamplePush'
+#             data_message['mutable-content'] = '1'
+#             if notification_ids_ios.__len__() > 0:
+#                 print(notification_ids_ios)
+#                 # data_message['aps'] = {"alert":"dasdas","badge":1,"sound":"default","category":"CustomSamplePush","mutable-content":"1"}
+
+#                 print(data_message)
+
+#                 result = push_service.notify_multiple_devices(registration_ids=notification_ids_ios,message_title = notify_data.data['title'], data_message=data_message,message_icon=image_i,content_available=True)
+#                 print(result,"ff")
+
+#             if notification_ids_android.__len__() > 0:
+#                 result = push_service.notify_multiple_devices(registration_ids=notification_ids_android,message_title = notify_data.data['title'], data_message=data_message,message_icon=image_i,content_available=True)
+#                 print(result,"ff")
+
+#     except Exception:
+#         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 def sendfcmnotifiction(notification_ids):
     try:
         idsArray = []
@@ -1197,14 +1244,51 @@ def sendfcmnotifiction(notification_ids):
             notify = Notification.objects.get(id=notification_ids[0])
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
-            data_message['click_action'] ='OPEN_ACTIVITY_1'
-            result = push_service.notify_multiple_devices(registration_ids=registration_ids, message_body=notify_data.data['discription'],message_title = notify_data.data['title'], data_message=data_message)
+            # image_i = notify_data.data['image']
+            #data_message['click_action'] ='OPEN_ACTIVITY_1'
+
+            # data_message['urlImageString'] = image_i
+            # {'id': 209, 'created_time': '2020-03-02 04:42:21', 'title': 'hjgfjgf', 'title_ar': 'jghjkmhygkj', 'discription': 'hjghj', 'discription_ar': 'jhgkjh', 'image': '/media/notificationimages/209/apple.png', 'is_read': False, 'brand': 2, 'country': 1, 'receiver': 12, 'click_action': 'OPEN_ACTIVITY_1', 'urlImageString': '/media/notificationimages/209/apple.png'}
+            
+            
+            data_message1 ={
+                "notification":{
+                    "id":notify_data.data['id'],
+                    "created_time":notify_data.data['created_time'],
+                    "title":notify_data.data['title'],
+                    "title_ar":notify_data.data['title_ar'],
+                    "discription":notify_data.data['discription'],
+                    "discription_ar":notify_data.data['discription_ar'],
+                    "image":notify_data.data['image'],
+                    "is_read":notify_data.data['is_read'],
+                    "brand":notify_data.data['brand'],
+                    "country":notify_data.data['country'],
+                    "receiver":notify_data.data['receiver'],
+                    "icon":notify_data.data['image']
+                }
+            }
+            print(data_message1,"jjjjjj")
+            
+
+            # data_message['aps'] = {"alert":"dasdas","badge":1,"sound":"default","category":"CustomSamplePush","mutable-content":"1"}
+
+            # result = push_service.notify_multiple_devices(registration_ids=registration_ids,message_title = notify_data.data['title'], data_message=data_message1,message_icon=image_i,content_available=True)
+            result = push_service.notify_multiple_devices(registration_ids=registration_ids,data_message=data_message1)
             print(result,"ff")
-        
+
 
     except Exception:
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+
+@api_view(['GET'])
+def Change_Admin(request):
+    try:
+        deviceToken = "ceqdG3zvkUf4vXmFNXUZYd:APA91bGPsG1qUhZglusKgAGVxeRw37kWL1BwvgVqRtvr0W6tqeYb-u81g1iK9guCLfloi6TX048fOO4b-ULBegPkyNz1oWdd5SobDNAxUZme9CDFAJZxF1w40aKD7i6oml1VZVwkhGeH"
+        return Response({"status": "1", "message": "Success"},status=status.HTTP_200_OK)
+    except:
+        return Response({"status": "1", "message": "error"},status=status.HTTP_200_OK)
 
 
 ############################################################
@@ -1344,7 +1428,7 @@ def uploadfile(request):
     try:
         with transaction.atomic():  
             try:
-                print(request.data.get('id'))
+                print(request.data.get('id'),"iiii")
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
@@ -1358,7 +1442,9 @@ def uploadfile(request):
             try:
                 if request.data.get('type') == "notifications":
                     is_array = isinstance(request.data.get('id').split(','), list)
+                    print(is_array,"array")
                     request_id = request.data.get('id').split(',')
+                    print(request_id,"idddddd")
                 else:
                     request_id = int(request.data.get('id'))
             except:

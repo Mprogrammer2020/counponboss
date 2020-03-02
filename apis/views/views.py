@@ -187,7 +187,7 @@ def UserRegister(request):
          
          
             
-            if request.POST.get('deviceType') is not None:
+            if request.POST.get('deviceType') is None or request.POST.get('deviceType') == "Null" or request.POST.get('deviceType') == "":
                 deviceType = request.data['deviceType']
             else:
                 deviceType = "a"
@@ -202,7 +202,7 @@ def UserRegister(request):
                 existedUser = User.objects.get(device_id =deviceId)
             except:
                 existedUser = None
-
+            
             # Login
             if existedUser is not None:
                 authUser = authenticate(username=existedUser.email, password=deviceId)
@@ -484,6 +484,9 @@ def add_delete_brandsinhome(request):
                 api_key = request.META.get('HTTP_AUTHORIZATION')
                 print(api_key)
                 result = auth_user(api_key)
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                print(user.id)
                 if result == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
@@ -497,10 +500,18 @@ def add_delete_brandsinhome(request):
                         if UserSelectedBrands.objects.filter(brand = brand ,user = result).exists():
                             return Response({"message" : "already selected", "status" : "1"}, status=status.HTTP_200_OK)
                         else:
-                            user_brands=UserSelectedBrands.objects.create(brand = brand,
-                                                    user = result
+                            if UserSelectedBrands.objects.filter(user = result).exists():
+                                user_brands=UserSelectedBrands.objects.filter(user = result).update(brand = brand,
+                                                        user = result
 
-                                                )
+                                                    )
+                            else:
+                                user_brands=UserSelectedBrands.objects.create(brand = brand,
+                                                        user = result
+
+                                                    )
+
+                            
                 msg = "successfully added"
 
             if(request.data['status'] == 1):
@@ -566,17 +577,22 @@ def Home(request):
                 result = auth_user(api_key)
                 token1 = Token.objects.get(key=api_key)
                 user = token1.user
+                print(result.id)
+
+                print(user.id)
                 if result == False:
                     return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            
             social_list = SocialMedia.objects.filter(status=1)
             if social_list is not None:
                 social_serializer = SocialMediaSerializer(social_list, many = True)
             else:
                 social_serializer = None
             brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
+            print(brandc,"brandccccccccccc")
             
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id,brand_id__in=brandc)
             brand_ids = userselectedbrands.values_list('brand_id', flat=True)
@@ -594,6 +610,7 @@ def Home(request):
             
             # brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
+            print(brand)
 
             user_data = UserSerializer(result)
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
