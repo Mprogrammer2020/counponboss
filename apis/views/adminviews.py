@@ -328,7 +328,7 @@ def Add_Coupon(request):
             if coupon_detail is not None:                                       
                 try:
                     for elem in request.data['country']:
-                        cntry = Country.objects.filter(id=elem).first()
+                        cntry = Country.objects.filter(id=elem['id']).first()
                         if cntry:
 
                             coupon_countries=CouponCountries.objects.create(coupon_id = coupon_detail.id,
@@ -396,7 +396,7 @@ def Edit_Coupon(request):
 
                     try:
                         for elem in request.data['country']:
-                            cntry = Country.objects.filter(id = elem).first()
+                            cntry = Country.objects.filter(id = elem['id']).first()
                             cupn = Coupon.objects.get(id = coupon_id)
 
                             if cntry:
@@ -620,7 +620,7 @@ def Add_Brands(request):
 
                     try:
                         for ctry in request.data['country']:
-                            country = Country.objects.filter(id=ctry).first()
+                            country = Country.objects.filter(id=ctry['id']).first()
                             if country:
 
                                 brand_countries=BrandCountries.objects.create(brand = brand_detail,
@@ -671,7 +671,7 @@ def Edit_Brands(request):
                         delete_brand_countries = BrandCountries.objects.filter(brand_id__in=brand).delete()
                         try:
                             for ctry in request.data['country']:
-                                country = Country.objects.filter(id=ctry).first()
+                                country = Country.objects.filter(id=ctry['id']).first()
                                 currentbrand =  Brands.objects.get(id=brandId)
                                 if country:
                                     brand_countries=BrandCountries.objects.create(brand = currentbrand,
@@ -881,6 +881,9 @@ def Get_Countries(request):
             
             if countries_list is not None:
                 country_serializer = CountrySerializer(countries_list, many = True)
+                for index, data in  enumerate(country_serializer.data):
+                    if countries_list:
+                        country_serializer.data[index]['itemName'] = country_serializer.data[index]['name']
                 return Response({"message" : addSuccessMessage, "response" : country_serializer.data, "count":country_serializer.data.__len__(),"status" : "1"}, status=status.HTTP_200_OK)
 
             else:

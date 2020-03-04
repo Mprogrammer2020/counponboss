@@ -226,6 +226,9 @@ def UserRegister(request):
                     if firebase_token:
                         existedUser.firebase_token = firebase_token
                         existedUser.save()
+                    if deviceType:
+                        existedUser.device_type = deviceType
+                        existedUser.save()
                     # update country 
                     try:
                         country = Country.objects.get(id=countryId,status=1)
@@ -463,7 +466,7 @@ def NotificationList(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             
-            notifications = Notification.objects.filter(receiver_id=result.id).order_by('-created_time')
+            notifications = Notification.objects.filter(receiver_id=result.id,country_id = result.country_id).order_by('-created_time')
             notifications.update(is_read=True)
             notifications_json = NotificationSerializer(notifications, many=True)
             return Response({"message" : "Success", "status" : "1", "Notifications": notifications_json.data}, status=status.HTTP_201_CREATED)
@@ -492,44 +495,53 @@ def add_delete_brandsinhome(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
-
-            if(request.data['status'] == 0):   
-                for brandid in request.data['BrandId']:
-                    brand = Brands.objects.get(id=brandid)
-                    if brand:
-                        if UserSelectedBrands.objects.filter(brand = brand ,user = result).exists():
-                            return Response({"message" : "already selected", "status" : "1"}, status=status.HTTP_200_OK)
-                        else:
-                            if UserSelectedBrands.objects.filter(user = result).exists():
-                                user_brands=UserSelectedBrands.objects.filter(user = result).update(brand = brand,
-                                                        user = result
-
-                                                    )
-                            else:
-                                user_brands=UserSelectedBrands.objects.create(brand = brand,
-                                                        user = result
-
-                                                    )
-
-                            
-                msg = "successfully added"
-
-            if(request.data['status'] == 1):
-                for brandid in request.data['BrandId']:
+            brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
+            brand = Brands.objects.filter(id__in = brandc ,status=1)
+            print(brand,"hhhh")
+            if brand:
+                print("entegfgfgfr")
+                if(request.data['status'] == 0):   
+                    for brandid in request.data['BrandId']:
+                        
                         brand = Brands.objects.get(id=brandid)
+                        print(brand,"jjjj")
+                        
                         if brand:
+                            if UserSelectedBrands.objects.filter(brand = brand ,user = result).exists():
+                                return Response({"message" : "already selected", "status" : "1"}, status=status.HTTP_200_OK)
+                            else:
+                                if UserSelectedBrands.objects.filter(user = result).exists():
+                                    user_brands=UserSelectedBrands.objects.filter(user = result).update(brand = brand,
+                                                            user = result
 
-                            user_brands=UserSelectedBrands.objects.filter(brand = brand,
-                                                    user = result).delete() 
-                msg = "successfully deleted"
-            brandslist = Brands.objects.filter(status=1)
-            print(brandslist)
-            brandsjson = BrandSerializer(brandslist, many=True)
+                                                        )
+                                else:
+                                    user_brands=UserSelectedBrands.objects.create(brand = brand,
+                                                            user = result
 
-            brandshash = brandsjson.data
-            getSelectedBrand(brandshash, result)
+                                                        )
 
-            return Response({"message" : msg, "status" : "1", "brands": brandshash}, status=status.HTTP_201_CREATED)
+                                
+                    msg = "successfully added"
+
+                if(request.data['status'] == 1):
+                    for brandid in request.data['BrandId']:
+                            brand = Brands.objects.get(id=brandid)
+                            if brand:
+
+                                user_brands=UserSelectedBrands.objects.filter(brand = brand,
+                                                        user = result).delete() 
+                    msg = "successfully deleted"
+                brandslist = Brands.objects.filter(status=1)
+                print(brandslist)
+                brandsjson = BrandSerializer(brandslist, many=True)
+
+                brandshash = brandsjson.data
+                getSelectedBrand(brandshash, result)
+
+                return Response({"message" : msg, "status" : "1", "brands": brandshash}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({"message" : "brand not present in the selected country", "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -598,19 +610,20 @@ def Home(request):
             brand_ids = userselectedbrands.values_list('brand_id', flat=True)
 
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
+            print(brands,"brands")
             usedbrandsjson = BrandSerializer(brands, many=True)
             
             # if brand_ids.count() > 0:
             #     featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
             # else:
-            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
 
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
             
             # brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
-            print(brand)
+            print(brand,"brand")
 
             user_data = UserSerializer(result)
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
