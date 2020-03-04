@@ -496,9 +496,10 @@ def add_delete_brandsinhome(request):
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
-            brand = Brands.objects.filter(id__in = brandc ,status=1)
-            print(brand,"hhhh")
-            if brand:
+            brandi = Brands.objects.filter(id__in = brandc ,status=1)
+            
+            
+            if brandi:
                 print("entegfgfgfr")
                 if(request.data['status'] == 0):   
                     for brandid in request.data['BrandId']:
@@ -626,7 +627,7 @@ def Home(request):
             print(brand,"brand")
 
             user_data = UserSerializer(result)
-            no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id, is_read= False).count()
+            no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id,country_id = result.country_id, is_read= False).count()
             if brand.count() > 0:
             # brandslist = Brands.objects.filter(status=1)
             # print(brandslist)
