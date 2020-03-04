@@ -107,13 +107,28 @@ WSGI_APPLICATION = 'CouponBoss.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'coupon',
+#         'USER': 'root',
+#         'PASSWORD': 'root',
+#         #'PASSWORD': 'Netset@123',
+#         'HOST': 'localhost',  # OD113610194880343000
+#         'PORT': '3306',
+#         'OPTIONS': {
+#             'sql_mode': 'traditional',
+#         }
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'coupon',
         'USER': 'root',
-        'PASSWORD': 'root',
-        #'PASSWORD': 'Netset@123',
+        #'PASSWORD': 'root',
+        'PASSWORD': '@boss!Apps4321!',
         'HOST': 'localhost',  # OD113610194880343000
         'PORT': '3306',
         'OPTIONS': {
@@ -121,6 +136,8 @@ DATABASES = {
         }
     }
 }
+
+
 
 
 # Password validation

@@ -1232,7 +1232,7 @@ def sendfcmnotifiction(notification_ids):
                     "mutable_content" : True
                     },
                 "data":{
-                    "urlImageString": "http://192.168.2.57:8000"+notify_data.data['image'],
+                    "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
                     "id":notify_data.data['id'],
                     "created_time":notify_data.data['created_time'],
                     "title":notify_data.data['title'],
