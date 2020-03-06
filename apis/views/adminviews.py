@@ -917,6 +917,9 @@ def GetUsers(request):
             users = usergroups.values_list('user', flat=True)
             users_list = User.objects.filter(id__in = users)
             users_serializer = UserSerializer(users_list, many = True)
+            for index, data in  enumerate(users_serializer.data):
+                    if users_list:
+                        users_serializer.data[index]['itemName'] = users_serializer.data[index]['device_id']
             return Response({"message" : addSuccessMessage, "response" : users_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)        
     except Exception:
         print(traceback.format_exc())
@@ -1825,6 +1828,9 @@ def GetUsersByCountry(request):
             users = usergroups.values_list('user', flat=True)
             users_list = User.objects.filter(id__in = users, country=request.data["countryId"])
             users_serializer = UserSerializer(users_list, many = True)
+            for index, data in  enumerate(users_serializer.data):
+                    if users_list:
+                        users_serializer.data[index]['itemName'] = users_serializer.data[index]['device_id']
             return Response({"message" : addSuccessMessage, "response" : users_serializer.data, "status" : "1"}, status=status.HTTP_200_OK)        
     except Exception:
         print(traceback.format_exc())

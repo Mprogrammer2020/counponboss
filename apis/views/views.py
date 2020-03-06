@@ -627,6 +627,7 @@ def Home(request):
             print(brand,"brand")
 
             user_data = UserSerializer(result)
+            print(result.firebase_token,"jhgh")
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id,country_id = result.country_id, is_read= False).count()
             if brand.count() > 0:
             # brandslist = Brands.objects.filter(status=1)
@@ -645,9 +646,9 @@ def Home(request):
 
                 couponudiscountindecimal(couponsjson)
 
-                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications,'sociallinks':social_serializer.data}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications,'firebase_token':result.firebase_token,'sociallinks':social_serializer.data}, status=status.HTTP_201_CREATED)
             else:
-                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":[], "couponslist": [], "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications,'sociallinks':[]}, status=status.HTTP_201_CREATED)
+                return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":[], "couponslist": [], "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications,'firebase_token':result.firebase_token,'sociallinks':[]}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
