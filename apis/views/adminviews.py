@@ -1193,39 +1193,42 @@ def sendfcmnotifiction(notification_ids):
         idsArray = []
         notification_ids_ios = []
         notification_ids_android = []
+
+        notification_ids_ios_arabic = []
+        notification_ids_android_arabic = []
+
         print(notification_ids,"hh")
         if notification_ids.__len__() > 0:
             for notification_id in notification_ids:
                 print("ghello")      
                 user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=True)
                 user_serializer = UserSerializer(user, many=True)
+
                 if user_serializer.data != []:
-                    idList = user_serializer.data[0]['firebase_token'] 
-                    if  user_serializer.data[0]['device_type'] == "iOS":
-                        print(idList,"ios")
-                        notification_ids_ios.append(idList)
+                    if user_serializer.data[0]['language_code'] == 'en':
+
+                        idList = user_serializer.data[0]['firebase_token'] 
+                        if  user_serializer.data[0]['device_type'] == "iOS":
+                            print(idList,"ios")
+                            notification_ids_ios.append(idList)
+                        else:
+                            notification_ids_android.append(idList)
                     else:
-                        print()
-                        notification_ids_android.append(idList)
+                        idList = user_serializer.data[0]['firebase_token'] 
+                        if  user_serializer.data[0]['device_type'] == "iOS":
+                            print(idList,"ios")
+                            notification_ids_ios_arabic.append(idList)
+                        else:
+                            notification_ids_android_arabic.append(idList)
+
+
             push_service = FCMNotification(api_key=fcm_api_key)
+            
             notify = Notification.objects.get(id=notification_ids[0])
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
             
             if notification_ids_ios.__len__() > 0:
-                print(notification_ids_ios)
-                
-            
-                # data_message1 = {
-                # "registration_ids" : idsArrayWeb,
-                # "notification":{
-                #     "title": "fhdefgbh",
-                #     "mutable_content" : True
-                #     },
-                # "data":{
-                #     "urlImageString": "https://192.168.2.57:8000"+notify_data.data['image']
-                #     }
-                # }
 
                 data_message1 = {
                 "registration_ids" : notification_ids_ios,
@@ -1239,9 +1242,7 @@ def sendfcmnotifiction(notification_ids):
                     "id":notify_data.data['id'],
                     "created_time":notify_data.data['created_time'],
                     "title":notify_data.data['title'],
-                    "title_ar":notify_data.data['title_ar'],
                     "discription":notify_data.data['discription'],
-                    "discription_ar":notify_data.data['discription_ar'],
                     "image":notify_data.data['image'],
                     "is_read":notify_data.data['is_read'],
                     "brand":notify_data.data['brand'],
@@ -1257,15 +1258,46 @@ def sendfcmnotifiction(notification_ids):
                 resp = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data_message1), headers={'Content-Type':'application/json', 'Authorization':"key=AIzaSyDzC_5zdYVr4ayup7DfjkO0F-XOHqiP4Eo"})
                 print(resp,"ff")
 
+
+
+            if notification_ids_ios_arabic.__len__() > 0:
+                
+                data_message2 = {
+                "registration_ids" : notification_ids_ios_arabic,
+                "notification":{
+                    "title" : notify_data.data['title_ar'],
+                    "body" : notify_data.data['discription_ar'],
+                    "mutable_content" : True
+                    },
+                "data":{
+                    "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                    "id":notify_data.data['id'],
+                    "created_time":notify_data.data['created_time'],
+                    "title":notify_data.data['title_ar'],
+                    "discription":notify_data.data['discription_ar'],
+                    "image":notify_data.data['image'],
+                    "is_read":notify_data.data['is_read'],
+                    "brand":notify_data.data['brand'],
+                    "country":notify_data.data['country'],
+                    "receiver":notify_data.data['receiver'],
+                    "icon":notify_data.data['image']
+                    }
+                }
+
+                print("ios arabic cREATED")
+                
+                # result = push_service.notify_multiple_devices(registration_ids=notification_ids_ios,message_title = notify_data.data['title'], data_message=data_message,message_icon=image_i,content_available=True)
+                resp = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data_message2), headers={'Content-Type':'application/json', 'Authorization':"key=AIzaSyDzC_5zdYVr4ayup7DfjkO0F-XOHqiP4Eo"})
+                print(resp,"ff")
+
+
             if notification_ids_android.__len__() > 0:
-                data_message1 ={
+                data_message3 ={
                     "notification":{
                         "id":notify_data.data['id'],
                         "created_time":notify_data.data['created_time'],
                         "title":notify_data.data['title'],
-                        "title_ar":notify_data.data['title_ar'],
                         "discription":notify_data.data['discription'],
-                        "discription_ar":notify_data.data['discription_ar'],
                         "image":notify_data.data['image'],
                         "is_read":notify_data.data['is_read'],
                         "brand":notify_data.data['brand'],
@@ -1275,7 +1307,27 @@ def sendfcmnotifiction(notification_ids):
                     }
                 }
                 print("aNDROID cREATED")
-                result = push_service.notify_multiple_devices(registration_ids=notification_ids_android,data_message=data_message1)
+                result = push_service.notify_multiple_devices(registration_ids=notification_ids_android,data_message=data_message3)
+                print(result,"ff")
+
+
+            if notification_ids_android_arabic.__len__() > 0:
+                data_message4 ={
+                    "notification":{
+                        "id":notify_data.data['id'],
+                        "created_time":notify_data.data['created_time'],
+                        "title":notify_data.data['title_ar'],
+                        "discription":notify_data.data['discription_ar'],
+                        "image":notify_data.data['image'],
+                        "is_read":notify_data.data['is_read'],
+                        "brand":notify_data.data['brand'],
+                        "country":notify_data.data['country'],
+                        "receiver":notify_data.data['receiver'],
+                        "icon":notify_data.data['image']
+                    }
+                }
+                print("aNDROID arabic cREATED")
+                result = push_service.notify_multiple_devices(registration_ids=notification_ids_android_arabic,data_message=data_message4)
                 print(result,"ff")
 
     except Exception:
