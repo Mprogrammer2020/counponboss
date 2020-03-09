@@ -641,7 +641,7 @@ def Add_Brands(request):
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-############################################################
+########################################Edit_Bra####################
 #     Edit Brands
 ############################################################
 import base64
@@ -1147,6 +1147,7 @@ def SendNotification(request):
                 for user in request.data['userId']:
                     print("notifications")
                     user = User.objects.get(id=user)
+                    print(user)
                     idList = user.device_id
                     idsArray.append(idList)
                     user_json = UserSerializer(user)
@@ -1221,14 +1222,27 @@ def sendfcmnotifiction(notification_ids):
                         else:
                             notification_ids_android_arabic.append(idList)
 
-
             push_service = FCMNotification(api_key=fcm_api_key)
             
             notify = Notification.objects.get(id=notification_ids[0])
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
             
+            pdb.set_trace()
             if notification_ids_ios.__len__() > 0:
+                print(notification_ids_ios)
+            
+            
+                # data_message1 = {
+                # "registration_ids" : idsArrayWeb,
+                # "notification":{
+                #     "title": "fhdefgbh",
+                #     "mutable_content" : True
+                #     },
+                # "data":{
+                #     "urlImageString": "https://192.168.2.57:8000"+notify_data.data['image']
+                #     }
+                # }
 
                 data_message1 = {
                 "registration_ids" : notification_ids_ios,

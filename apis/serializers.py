@@ -37,6 +37,7 @@ class RequestCouponSerializer(serializers.ModelSerializer):
         fields =('__all__')
 class NotificationSerializer(serializers.ModelSerializer):
     created_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S')
+    receiver= UserSerializer()
     class Meta:
         model = Notification
         fields =('__all__')

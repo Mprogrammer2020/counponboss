@@ -1022,17 +1022,32 @@ def update_firebase_token(request):
 def Terms_Conditions(request):
     return render(request, "term&conditions.html")
 
+def Terms_Conditions_ar(request):
+    return render(request, "term&conditions_ar.html")
+
 def About_Us(request):
     return render(request, "aboutUs.html")
+
+def About_Us_ar(request):
+    return render(request, "aboutUs_ar.html")
 
 def FAQ(request):
     return render(request, "faq.html")
 
+def FAQ_ar(request):
+    return render(request, "faq_ar.html")
+
 def Privacy_Policy(request):
     return render(request, "privacypolicy.html")
 
+def Privacy_Policy_ar(request):
+    return render(request, "privacypolicy_ar.html")
+
 def Help(request):
     return render(request, "help.html")
+
+def Help_ar(request):
+    return render(request, "help_ar.html")
 
 @api_view(['POST'])
 def Select_Brands(request):
