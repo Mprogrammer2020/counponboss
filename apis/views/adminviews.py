@@ -1228,7 +1228,7 @@ def sendfcmnotifiction(notification_ids):
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
             
-            pdb.set_trace()
+            # pdb.set_trace()
             if notification_ids_ios.__len__() > 0:
                 print(notification_ids_ios)
             
