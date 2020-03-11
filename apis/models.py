@@ -11,6 +11,7 @@ from time import strptime
 class Country(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=100,default="")
+    name_ar = models.CharField(max_length=100,default="")
     image = models.CharField(max_length=250,default="")
     status = models.IntegerField(default=1)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True)

@@ -791,6 +791,7 @@ def Add_Country(request):
             if country_exist.count() == 0:
 
                 country_detail=Country.objects.create(name = request.data['countryName'],
+                                                        name_ar = request.data['countryName_ar'],
                                                         latitude = request.data['lat'],
                                                         longitude = request.data['long']
                                                           )

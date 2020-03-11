@@ -449,7 +449,7 @@ def OnOffNotification(request):
 ############################################################
 #             Notification List
 ############################################################
-
+from django.contrib.humanize import *
 @csrf_exempt
 @api_view(['GET'])
 def NotificationList(request):
@@ -469,6 +469,9 @@ def NotificationList(request):
             notifications = Notification.objects.filter(receiver_id=result.id,country_id = result.country_id).order_by('-created_time')
             notifications.update(is_read=True)
             notifications_json = NotificationSerializer(notifications, many=True)
+            for notification in notifications_json.data:
+                pass
+                #  notification['time_in_words'] = timesince:comment_date
             return Response({"message" : "Success", "status" : "1", "Notifications": notifications_json.data}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
@@ -926,7 +929,7 @@ def Search_Brands(request):
             searchBrand=request.data['searchBrand'].lower()
             print(searchBrand)
             brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
-            brand = Brands.objects.filter(id__in = brandc,name__icontains = searchBrand , status=1)
+            brand = Brands.objects.filter(id__in = brandc,name__icontains = searchBrand, status=1)|Brands.objects.filter(id__in = brandc,name_ar__icontains = searchBrand , status=1)
             if brand:
                 brand_serializer = BrandSerializer(brand, many = True)
                 brandserial = brand_serializer.data
