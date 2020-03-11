@@ -1253,7 +1253,7 @@ def sendfcmnotifiction(notification_ids):
                             "title": notify_data.data['title']
                         },
                         "mutable-content": 1,
-                        "category": "rich-apns",
+                        "category": "CustomSamplePush",
 
                         "data":{
                             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
@@ -1312,7 +1312,7 @@ def sendfcmnotifiction(notification_ids):
                             "body" : notify_data.data['discription_ar']
                         },
                         "mutable-content": 1,
-                        "category": "rich-apns",
+                        "category": "CustomSamplePush",
 
                         "data":{
                             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
