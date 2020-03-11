@@ -1230,6 +1230,7 @@ def sendfcmnotifiction(notification_ids):
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
 
+            
             if notification_ids_ios.__len__() > 0:
                 print(notification_ids_ios)
             
@@ -1246,42 +1247,31 @@ def sendfcmnotifiction(notification_ids):
                 # }
 
                 data_message1 = {
-                "registration_ids" : notification_ids_ios,
-                "notification":{
-                    "title" : notify_data.data['title'],
-                    "body" : notify_data.data['discription'],
-                    "mutable_content" : True
-                    },
-                "data":{
-                    "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
-                    "id":notify_data.data['id'],
-                    "created_time":notify_data.data['created_time'],
-                    "title":notify_data.data['title'],
-                    "discription":notify_data.data['discription'],
-                    "image":notify_data.data['image'],
-                    "is_read":notify_data.data['is_read'],
-                    "brand":notify_data.data['brand'],
-                    "country":notify_data.data['country'],
-                    "receiver":notify_data.data['receiver'],
-                    "icon":notify_data.data['image']
+                    "aps": {
+                        "alert": {
+                            "body": notify_data.data['discription'],
+                            "title": notify_data.data['title']
+                        },
+                        "mutable-content": 1,
+                        "category": "rich-apns",
+
+                        "data":{
+                            "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                            "id":notify_data.data['id'],
+                            "created_time":notify_data.data['created_time'],
+                            "title":notify_data.data['title'],
+                            "discription":notify_data.data['discription'],
+                            "image":notify_data.data['image'],
+                            "is_read":notify_data.data['is_read'],
+                            "brand":notify_data.data['brand'],
+                            "country":notify_data.data['country'],
+                            "receiver":notify_data.data['receiver'],
+                            "icon":notify_data.data['image']
+                            }
                     }
                 }
 
-                ios_message = {
-                                "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
-                                "id":notify_data.data['id'],
-                                "created_time":notify_data.data['created_time'],
-                                "title":notify_data.data['title'],
-                                "discription":notify_data.data['discription'],
-                                "image":notify_data.data['image'],
-                                "is_read":notify_data.data['is_read'],
-                                "brand":notify_data.data['brand'],
-                                "country":notify_data.data['country'],
-                                "receiver":notify_data.data['receiver'],
-                                "icon":notify_data.data['image']
-                            }
-
-                sendiosnotification(notification_ids_ios, ios_message)
+                sendiosnotification(notification_ids_ios, data_message1)
 
                 print("ios cREATED")
                 
@@ -1315,21 +1305,32 @@ def sendfcmnotifiction(notification_ids):
                     }
                 }
 
-                ios_message_arabic = {
-                                    "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
-                                    "id":notify_data.data['id'],
-                                    "created_time":notify_data.data['created_time'],
-                                    "title":notify_data.data['title_ar'],
-                                    "discription":notify_data.data['discription_ar'],
-                                    "image":notify_data.data['image'],
-                                    "is_read":notify_data.data['is_read'],
-                                    "brand":notify_data.data['brand'],
-                                    "country":notify_data.data['country'],
-                                    "receiver":notify_data.data['receiver'],
-                                    "icon":notify_data.data['image']
-                                }
+                data_message2 = {
+                    "aps": {
+                        "alert": {
+                            "title" : notify_data.data['title_ar'],
+                            "body" : notify_data.data['discription_ar']
+                        },
+                        "mutable-content": 1,
+                        "category": "rich-apns",
 
-                sendiosnotification(notification_ids_ios_arabic, ios_message_arabic )
+                        "data":{
+                            "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                            "id":notify_data.data['id'],
+                            "created_time":notify_data.data['created_time'],
+                            "title":notify_data.data['title_ar'],
+                            "discription":notify_data.data['discription_ar'],
+                            "image":notify_data.data['image'],
+                            "is_read":notify_data.data['is_read'],
+                            "brand":notify_data.data['brand'],
+                            "country":notify_data.data['country'],
+                            "receiver":notify_data.data['receiver'],
+                            "icon":notify_data.data['image']
+                            }
+                    }
+                }
+
+                sendiosnotification(notification_ids_ios_arabic, data_message2 )
 
                 print("ios arabic cREATED")
                 
