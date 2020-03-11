@@ -617,7 +617,6 @@ def Add_Brands(request):
                                                 url = request.data['website_url'])
                     
                 if brand_detail is not None:
-
                     try:
                         for ctry in request.data['country']:
                             country = Country.objects.filter(id=ctry['id']).first()
@@ -872,6 +871,8 @@ def Get_Countries(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             #page_num = request.GET['page_num']
             countries_list = Country.objects.filter(status=1)
+
+            
             # paginator = Paginator(countries_list, 2)
             # countries_list = None
             # try:
@@ -884,6 +885,7 @@ def Get_Countries(request):
                 for index, data in  enumerate(country_serializer.data):
                     if countries_list:
                         country_serializer.data[index]['itemName'] = country_serializer.data[index]['name']
+
                 return Response({"message" : addSuccessMessage, "response" : country_serializer.data, "count":country_serializer.data.__len__(),"status" : "1"}, status=status.HTTP_200_OK)
 
             else:
@@ -1227,8 +1229,7 @@ def sendfcmnotifiction(notification_ids):
             notify = Notification.objects.get(id=notification_ids[0])
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
-            
-            # pdb.set_trace()
+
             if notification_ids_ios.__len__() > 0:
                 print(notification_ids_ios)
             
@@ -1266,11 +1267,27 @@ def sendfcmnotifiction(notification_ids):
                     }
                 }
 
+                ios_message = {
+                                "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                                "id":notify_data.data['id'],
+                                "created_time":notify_data.data['created_time'],
+                                "title":notify_data.data['title'],
+                                "discription":notify_data.data['discription'],
+                                "image":notify_data.data['image'],
+                                "is_read":notify_data.data['is_read'],
+                                "brand":notify_data.data['brand'],
+                                "country":notify_data.data['country'],
+                                "receiver":notify_data.data['receiver'],
+                                "icon":notify_data.data['image']
+                            }
+
+                sendiosnotification(notification_ids_ios, ios_message)
+
                 print("ios cREATED")
                 
                 # result = push_service.notify_multiple_devices(registration_ids=notification_ids_ios,message_title = notify_data.data['title'], data_message=data_message,message_icon=image_i,content_available=True)
-                resp = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data_message1), headers={'Content-Type':'application/json', 'Authorization':"key=AIzaSyDzC_5zdYVr4ayup7DfjkO0F-XOHqiP4Eo"})
-                print(resp,"ff")
+                # resp = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data_message1), headers={'Content-Type':'application/json', 'Authorization':"key=AIzaSyDzC_5zdYVr4ayup7DfjkO0F-XOHqiP4Eo"})
+                # print(resp,"ff")
 
 
 
@@ -1298,11 +1315,27 @@ def sendfcmnotifiction(notification_ids):
                     }
                 }
 
+                ios_message_arabic = {
+                                    "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                                    "id":notify_data.data['id'],
+                                    "created_time":notify_data.data['created_time'],
+                                    "title":notify_data.data['title_ar'],
+                                    "discription":notify_data.data['discription_ar'],
+                                    "image":notify_data.data['image'],
+                                    "is_read":notify_data.data['is_read'],
+                                    "brand":notify_data.data['brand'],
+                                    "country":notify_data.data['country'],
+                                    "receiver":notify_data.data['receiver'],
+                                    "icon":notify_data.data['image']
+                                }
+
+                sendiosnotification(notification_ids_ios_arabic, ios_message_arabic )
+
                 print("ios arabic cREATED")
                 
                 # result = push_service.notify_multiple_devices(registration_ids=notification_ids_ios,message_title = notify_data.data['title'], data_message=data_message,message_icon=image_i,content_available=True)
-                resp = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data_message2), headers={'Content-Type':'application/json', 'Authorization':"key=AIzaSyDzC_5zdYVr4ayup7DfjkO0F-XOHqiP4Eo"})
-                print(resp,"ff")
+                # resp = requests.post('https://fcm.googleapis.com/fcm/send', data=json.dumps(data_message2), headers={'Content-Type':'application/json', 'Authorization':"key=AIzaSyDzC_5zdYVr4ayup7DfjkO0F-XOHqiP4Eo"})
+                # print(resp,"ff")
 
 
             if notification_ids_android.__len__() > 0:
@@ -1347,59 +1380,24 @@ def sendfcmnotifiction(notification_ids):
     except Exception:
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-# def sendfcmnotifiction(notification_ids):
-#     try:
-#         idsArray = []
-#         print(notification_ids,"hh")
-#         if notification_ids.__len__() > 0:
-#             for notification_id in notification_ids:
-#                 print("ghello")      
-#                 user = User.objects.filter(id__in=Notification.objects.filter(id=notification_id).values_list('receiver_id', flat=True), on_off_notification=True)
-#                 user_serializer = UserSerializer(user, many=True)
-#                 if user_serializer.data != []:
-#                     idList = user_serializer.data[0]['firebase_token'] 
-#                     idsArray.append(idList)
-#             push_service = FCMNotification(api_key=fcm_api_key)
-#             print(idsArray)
-#             registration_ids = idsArray
-#             notify = Notification.objects.get(id=notification_ids[0])
-#             notify_data = NotificationSerializer(notify)
-#             data_message = notify_data.data
-#             # image_i = notify_data.data['image']
-#             #data_message['click_action'] ='OPEN_ACTIVITY_1'
-
-#             # data_message['urlImageString'] = image_i
-#             # {'id': 209, 'created_time': '2020-03-02 04:42:21', 'title': 'hjgfjgf', 'title_ar': 'jghjkmhygkj', 'discription': 'hjghj', 'discription_ar': 'jhgkjh', 'image': '/media/notificationimages/209/apple.png', 'is_read': False, 'brand': 2, 'country': 1, 'receiver': 12, 'click_action': 'OPEN_ACTIVITY_1', 'urlImageString': '/media/notificationimages/209/apple.png'}
-            
-            
-#             data_message1 ={
-#                 "notification":{
-#                     "id":notify_data.data['id'],
-#                     "created_time":notify_data.data['created_time'],
-#                     "title":notify_data.data['title'],
-#                     "title_ar":notify_data.data['title_ar'],
-#                     "discription":notify_data.data['discription'],
-#                     "discription_ar":notify_data.data['discription_ar'],
-#                     "image":notify_data.data['image'],
-#                     "is_read":notify_data.data['is_read'],
-#                     "brand":notify_data.data['brand'],
-#                     "country":notify_data.data['country'],
-#                     "receiver":notify_data.data['receiver'],
-#                     "icon":notify_data.data['image']
-#                 }
-#             }
-#             print(data_message1,"jjjjjj")
-            
-
-#             # data_message['aps'] = {"alert":"dasdas","badge":1,"sound":"default","category":"CustomSamplePush","mutable-content":"1"}
-
-#             # result = push_service.notify_multiple_devices(registration_ids=registration_ids,message_title = notify_data.data['title'], data_message=data_message1,message_icon=image_i,content_available=True)
-#             result = push_service.notify_multiple_devices(registration_ids=registration_ids,data_message=data_message1)
-#             print(result,"ff")
 
 
-#     except Exception:
-#         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+from apns2.client import APNsClient
+from apns2.payload import Payload
+from django.conf import settings
+
+
+def sendiosnotification(notification_ids, data):
+    try:
+        for notification_id in notification_ids:
+            token_hex = notification_id
+            payload = Payload(alert=data, sound="default", badge=1)
+            topic = 'com.app.CouponBoss'
+            client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+            client.send_notification(token_hex, payload, topic)
+
+    except Exception:
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
