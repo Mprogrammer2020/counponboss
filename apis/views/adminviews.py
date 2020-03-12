@@ -1456,9 +1456,10 @@ from django.conf import settings
 
 def sendiosnotification(notification_ids, data):
     try:
-        print(data,"dddddd")
+        print("ios notification==========================")
+        print(notification_ids)
         for notification_id in notification_ids:
-            print(notification_id,"id")
+            print(notification_id,"id-------------------")
             token_hex = notification_id
 
             alert_data = {"title": data['title'], "body": data['discription']}
@@ -1470,6 +1471,7 @@ def sendiosnotification(notification_ids, data):
             topic = 'com.app.CouponBoss'
             client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
             client.send_notification(token_hex, payload, topic)
+            print("send sucessfullty--------------")
 
     except Exception:
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
