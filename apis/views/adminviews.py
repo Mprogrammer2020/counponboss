@@ -1319,17 +1319,20 @@ def sendfcmnotifiction(notification_ids):
                     if notification_id != '':
                         print(notification_id,"id send start-------------------")
                         token_hex = notification_id
-
-                        alert_data = {"title": data_ios['title'], "body": data_ios['discription']}
-                    
-                        extra =  {"data":{"urlImageString": data_ios['icon']}, "brand": data_ios['brand']}
-                        payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
-                        # payload = data
-                        # payload = apns2.Payload(alert=data)
-                        topic = 'com.app.CouponBoss'
-                        client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
-                        client.send_notification(token_hex, payload, topic)
-                        print("send sucessfullty--------------")
+                        
+                        try: 
+                            alert_data = {"title": data_ios['title'], "body": data_ios['discription']}
+                        
+                            extra =  {"data":{"urlImageString": data_ios['icon']}, "brand": data_ios['brand']}
+                            payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
+                            # payload = data
+                            # payload = apns2.Payload(alert=data)
+                            topic = 'com.app.CouponBoss'
+                            client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                            result = client.send_notification(token_hex, payload, topic)
+                            print("send sucessfullty--------------", result)
+                        except:
+                            print(traceback.format_exc())
 
 
 
@@ -1344,71 +1347,6 @@ def sendfcmnotifiction(notification_ids):
 
 
             if notification_ids_ios_arabic.__len__() > 0:
-                
-                # data_message2 = {
-                # "registration_ids" : notification_ids_ios_arabic,
-                # "notification":{
-                #     "title" : notify_data.data['title_ar'],
-                #     "body" : notify_data.data['discription_ar'],
-                #     "mutable_content" : True
-                #     },
-                # "data":{
-                #     "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
-                #     "id":notify_data.data['id'],
-                #     "created_time":notify_data.data['created_time'],
-                #     "title":notify_data.data['title_ar'],
-                #     "discription":notify_data.data['discription_ar'],
-                #     "image":notify_data.data['image'],
-                #     "is_read":notify_data.data['is_read'],
-                #     "brand":notify_data.data['brand'],
-                #     "country":notify_data.data['country'],
-                #     "receiver":notify_data.data['receiver'],
-                #     "icon":notify_data.data['image']
-                #     }
-                # }
-
-                # data_message2 = {
-                #     "aps": {
-                #         "alert": {
-                #             "title" : notify_data.data['title_ar'],
-                #             "body" : notify_data.data['discription_ar']
-                #         },
-                #         "mutable-content": 1,
-                #         "category": "CustomSamplePush",
-
-                #         "data":{
-                #             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
-                #             "id":notify_data.data['id'],
-                #             "created_time":notify_data.data['created_time'],
-                #             "title":notify_data.data['title_ar'],
-                #             "discription":notify_data.data['discription_ar'],
-                #             "image":notify_data.data['image'],
-                #             "is_read":notify_data.data['is_read'],
-                #             "brand":notify_data.data['brand'],
-                #             "country":notify_data.data['country'],
-                #             "receiver":notify_data.data['receiver'],
-                #             "icon":notify_data.data['image']
-                #             }
-                #     }
-                # }
-
-                data_message2 = {
-                        "aps": {
-                            "alert": {
-                                "title" : notify_data.data['title_ar'],
-                                "body" : notify_data.data['discription_ar']
-                            },
-                            "sound": "default",
-                            "mutable-content": 1,
-                            "badge": 1,
-                            "category": "CustomSamplePush",
-                            "brand" : notify_data.data['brand'],	
-                        },
-                        "data": {
-                            "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
-
-                        }
-                    }
                 data_ios_ar = {
                             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
                             "id":notify_data.data['id'],
@@ -1422,24 +1360,26 @@ def sendfcmnotifiction(notification_ids):
                             "receiver":notify_data.data['receiver'],
                             "icon": "http://159.89.49.231:8000"+notify_data.data['image']
 
-                }
+                        }
 
                 print("notification_ids_ios_arabic =========>",notification_ids_ios_arabic)
-                for notification_id in notification_ids_ios_arabic:
-                    print(notification_id,"id ar send start-------------------")
-                    if notification_id != '':
-                        token_hex = notification_id
-
-                        alert_data = {"title": data_ios_ar['title'], "body": data_ios_ar['discription']}
-                    
-                        extra =  {"data":{"urlImageString": data_ios_ar['icon']}, "brand": data_ios_ar['brand']}
-                        payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
-                        # payload = data
-                        # payload = apns2.Payload(alert=data)
-                        topic = 'com.app.CouponBoss'
-                        client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
-                        client.send_notification(token_hex, payload, topic)
-                        print("send sucessfullty--------------")
+                for notification_id_ar in notification_ids_ios_arabic:
+                    print(notification_id_ar,"id ar send start-------------------")
+                    if notification_id_ar != '':
+                        token_hex_ar = notification_id_ar
+                        try: 
+                            alert_data_ar = {"title": data_ios_ar['title'], "body": data_ios_ar['discription']}
+                        
+                            extra_ar =  {"data":{"urlImageString": data_ios_ar['icon']}, "brand": data_ios_ar['brand']}
+                            payload_ar = Payload(alert=alert_data_ar, sound="default", badge=1, custom=extra_ar,  mutable_content=1)
+                            # payload = data
+                            # payload = apns2.Payload(alert=data)
+                            topic_ar = 'com.app.CouponBoss'
+                            client_ar = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                            result_ar = client_ar.send_notification(token_hex_ar, payload_ar, topic_ar)
+                            print("send sucessfullty--------------", result_ar)
+                        except:
+                            print(traceback.format_exc())
 
                 # 
                 # sendiosnotification(notification_ids_ios_arabic, data_ios_ar )
