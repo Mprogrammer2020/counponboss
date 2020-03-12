@@ -1,4 +1,4 @@
-errorMessage = "Sorry! Something went wrong."
+errorMessage = "Something went wrong."
 addSuccessMessage = "Successfully added."
 loginSuccessMessage = "Successfully login"
 errorEmailPasswordIncorrect = "email or password is incorrect"

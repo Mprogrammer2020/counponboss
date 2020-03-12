@@ -143,7 +143,7 @@ def UserLogin(request):
 
     except Exception as e:
         print(traceback.format_exc())
-        return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'status':0, 'message':"Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 ############################################################
@@ -302,7 +302,7 @@ def UserRegister(request):
                 return Response({"status" : "1", 'message':'User has been successfully registered.', 'data' : userDetail, "is_registered": False}, status=status.HTTP_200_OK)                          
     except Exception as e:
         print(traceback.format_exc())
-        return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'status':0, 'message':"Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 ############################################################
 #             Coupon Detail
@@ -500,8 +500,7 @@ def add_delete_brandsinhome(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
             brandi = Brands.objects.filter(id__in = brandc ,status=1)
-            
-            
+        
             if brandi:
                 print("entegfgfgfr")
                 if(request.data['status'] == 0):   
@@ -978,6 +977,7 @@ def Change_Country(request):
                 langu = User.objects.get(id = user.id)
                 lang_code = langu.language_code
             print(authUser)
+        
             if authUser:
                 return Response({"status" : "1", 'message': change_value+' Changed successfully.','language':lang_code}, status=status.HTTP_200_OK)
 

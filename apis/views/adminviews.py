@@ -1247,16 +1247,49 @@ def sendfcmnotifiction(notification_ids):
                 #     }
                 # }
 
-                data_message1 = {
-                    "aps": {
-                        "alert": {
-                            "body": notify_data.data['discription'],
-                            "title": notify_data.data['title']
-                        },
-                        "mutable-content": 1,
-                        "category": "CustomSamplePush",
+                # data_message1 = {
+                #     "aps": {
+                #         "alert": {
+                #             "body": notify_data.data['discription'],
+                #             "title": notify_data.data['title']
+                #         },
+                #         "mutable-content": 1,
+                #         "category": "CustomSamplePush",
 
-                        "data":{
+                #         "data":{
+                #             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                #             "id":notify_data.data['id'],
+                #             "created_time":notify_data.data['created_time'],
+                #             "title":notify_data.data['title'],
+                #             "discription":notify_data.data['discription'],
+                #             "image":notify_data.data['image'],
+                #             "is_read":notify_data.data['is_read'],
+                #             "brand":notify_data.data['brand'],
+                #             "country":notify_data.data['country'],
+                #             "receiver":notify_data.data['receiver'],
+                #             "icon":notify_data.data['image']
+                #             }
+                #     }
+                # }
+                data_message1 = {
+                        "aps": {
+                            "alert": {
+                                "title" : notify_data.data['title'],
+                                "body" : notify_data.data['discription']
+                            },
+                            "sound": "default",
+                            "mutable-content": 1,
+                            "badge": 1,
+                            "category": "CustomSamplePush",
+                            "brand" : notify_data.data['brand'],	
+                        },
+                        "data": {
+                            "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+
+                        }
+                    }
+
+                data_ios = {
                             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
                             "id":notify_data.data['id'],
                             "created_time":notify_data.data['created_time'],
@@ -1267,12 +1300,11 @@ def sendfcmnotifiction(notification_ids):
                             "brand":notify_data.data['brand'],
                             "country":notify_data.data['country'],
                             "receiver":notify_data.data['receiver'],
-                            "icon":notify_data.data['image']
-                            }
-                    }
+                            "icon": "http://159.89.49.231:8000"+notify_data.data['image']
+
                 }
 
-                sendiosnotification(notification_ids_ios, data_message1)
+                sendiosnotification(notification_ids_ios, data_ios)
 
                 print("ios cREATED")
                 
@@ -1284,38 +1316,71 @@ def sendfcmnotifiction(notification_ids):
 
             if notification_ids_ios_arabic.__len__() > 0:
                 
-                data_message2 = {
-                "registration_ids" : notification_ids_ios_arabic,
-                "notification":{
-                    "title" : notify_data.data['title_ar'],
-                    "body" : notify_data.data['discription_ar'],
-                    "mutable_content" : True
-                    },
-                "data":{
-                    "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
-                    "id":notify_data.data['id'],
-                    "created_time":notify_data.data['created_time'],
-                    "title":notify_data.data['title_ar'],
-                    "discription":notify_data.data['discription_ar'],
-                    "image":notify_data.data['image'],
-                    "is_read":notify_data.data['is_read'],
-                    "brand":notify_data.data['brand'],
-                    "country":notify_data.data['country'],
-                    "receiver":notify_data.data['receiver'],
-                    "icon":notify_data.data['image']
-                    }
-                }
+                # data_message2 = {
+                # "registration_ids" : notification_ids_ios_arabic,
+                # "notification":{
+                #     "title" : notify_data.data['title_ar'],
+                #     "body" : notify_data.data['discription_ar'],
+                #     "mutable_content" : True
+                #     },
+                # "data":{
+                #     "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                #     "id":notify_data.data['id'],
+                #     "created_time":notify_data.data['created_time'],
+                #     "title":notify_data.data['title_ar'],
+                #     "discription":notify_data.data['discription_ar'],
+                #     "image":notify_data.data['image'],
+                #     "is_read":notify_data.data['is_read'],
+                #     "brand":notify_data.data['brand'],
+                #     "country":notify_data.data['country'],
+                #     "receiver":notify_data.data['receiver'],
+                #     "icon":notify_data.data['image']
+                #     }
+                # }
+
+                # data_message2 = {
+                #     "aps": {
+                #         "alert": {
+                #             "title" : notify_data.data['title_ar'],
+                #             "body" : notify_data.data['discription_ar']
+                #         },
+                #         "mutable-content": 1,
+                #         "category": "CustomSamplePush",
+
+                #         "data":{
+                #             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
+                #             "id":notify_data.data['id'],
+                #             "created_time":notify_data.data['created_time'],
+                #             "title":notify_data.data['title_ar'],
+                #             "discription":notify_data.data['discription_ar'],
+                #             "image":notify_data.data['image'],
+                #             "is_read":notify_data.data['is_read'],
+                #             "brand":notify_data.data['brand'],
+                #             "country":notify_data.data['country'],
+                #             "receiver":notify_data.data['receiver'],
+                #             "icon":notify_data.data['image']
+                #             }
+                #     }
+                # }
 
                 data_message2 = {
-                    "aps": {
-                        "alert": {
-                            "title" : notify_data.data['title_ar'],
-                            "body" : notify_data.data['discription_ar']
+                        "aps": {
+                            "alert": {
+                                "title" : notify_data.data['title_ar'],
+                                "body" : notify_data.data['discription_ar']
+                            },
+                            "sound": "default",
+                            "mutable-content": 1,
+                            "badge": 1,
+                            "category": "CustomSamplePush",
+                            "brand" : notify_data.data['brand'],	
                         },
-                        "mutable-content": 1,
-                        "category": "CustomSamplePush",
+                        "data": {
+                            "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
 
-                        "data":{
+                        }
+                    }
+                data_ios_ar = {
                             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
                             "id":notify_data.data['id'],
                             "created_time":notify_data.data['created_time'],
@@ -1326,12 +1391,12 @@ def sendfcmnotifiction(notification_ids):
                             "brand":notify_data.data['brand'],
                             "country":notify_data.data['country'],
                             "receiver":notify_data.data['receiver'],
-                            "icon":notify_data.data['image']
-                            }
-                    }
+                            "icon": "http://159.89.49.231:8000"+notify_data.data['image']
+
                 }
 
-                sendiosnotification(notification_ids_ios_arabic, data_message2 )
+
+                sendiosnotification(notification_ids_ios_arabic, data_ios_ar )
 
                 print("ios arabic cREATED")
                 
@@ -1391,9 +1456,17 @@ from django.conf import settings
 
 def sendiosnotification(notification_ids, data):
     try:
+        print(data,"dddddd")
         for notification_id in notification_ids:
+            print(notification_id,"id")
             token_hex = notification_id
-            payload = Payload(alert=data, sound="default", badge=1)
+
+            alert_data = {"title": data['title'], "body": data['discription']}
+           
+            extra =  {"data":{"urlImageString": data['icon']}, "brand": data['brand']}
+            payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
+            # payload = data
+            # payload = apns2.Payload(alert=data)
             topic = 'com.app.CouponBoss'
             client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
             client.send_notification(token_hex, payload, topic)
