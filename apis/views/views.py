@@ -7,7 +7,7 @@ import json
 import string
 import random, pytz
 from django.utils import timezone
-
+import arrow
 import traceback
 from apis.models import *
 from django.views.decorators.csrf import csrf_exempt
@@ -413,6 +413,9 @@ def UsedCoupon(request):
             coupons_id = usercoupons.values_list('coupon_id', flat=True)
             coupons = Coupon.objects.filter(id__in=coupons_id).order_by('-created_time')
             coupon_detail = CouponSerializer(coupons, many=True)
+            for coupnd in coupon_detail.data:
+                    past = arrow.get(str(coupnd['last_usage_time'])).shift(seconds=-1)
+                    coupnd['times_ago'] = past.humanize()
             couponudiscountindecimal(coupon_detail)
             return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -450,6 +453,7 @@ def OnOffNotification(request):
 #             Notification List
 ############################################################
 from django.contrib.humanize import *
+
 @csrf_exempt
 @api_view(['GET'])
 def NotificationList(request):
@@ -470,8 +474,8 @@ def NotificationList(request):
             notifications.update(is_read=True)
             notifications_json = NotificationSerializer(notifications, many=True)
             for notification in notifications_json.data:
-                pass
-                #  notification['time_in_words'] = timesince:comment_date
+                past = arrow.get(str(notification['created_time'])).shift(seconds=-1)
+                notification['times_ago'] = past.humanize()
             return Response({"message" : "Success", "status" : "1", "Notifications": notifications_json.data}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
@@ -645,6 +649,9 @@ def Home(request):
                     coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
                     
                 couponsjson = CouponSerializer(coupons, many=True)
+                for coupn in couponsjson.data:
+                    past = arrow.get(str(coupn['last_usage_time'])).shift(seconds=-1)
+                    coupn['times_ago'] = past.humanize()
 
                 couponudiscountindecimal(couponsjson)
 
