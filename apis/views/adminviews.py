@@ -1231,7 +1231,11 @@ def sendfcmnotifiction(notification_ids):
             notify_data = NotificationSerializer(notify)
             data_message = notify_data.data
 
-            
+            print("notification_ids_ios-------------",notification_ids_ios)
+            print("notification_ids_android-------------",notification_ids_android)
+            print("notification_ids_ios_arabic-------------",notification_ids_ios_arabic)
+            print("notification_ids_android_arabic-------------",notification_ids_android_arabic)
+
             if notification_ids_ios.__len__() > 0:
                 print(notification_ids_ios)
             
@@ -1303,7 +1307,7 @@ def sendfcmnotifiction(notification_ids):
                             "icon": "http://159.89.49.231:8000"+notify_data.data['image']
 
                 }
-
+                print("notification_ids_ios =========>",notification_ids_ios)
                 sendiosnotification(notification_ids_ios, data_ios)
 
                 print("ios cREATED")
@@ -1395,7 +1399,7 @@ def sendfcmnotifiction(notification_ids):
 
                 }
 
-
+                print("notification_ids_ios_arabic =========>",notification_ids_ios_arabic)
                 sendiosnotification(notification_ids_ios_arabic, data_ios_ar )
 
                 print("ios arabic cREATED")
