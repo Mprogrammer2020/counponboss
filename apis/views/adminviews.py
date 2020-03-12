@@ -1191,6 +1191,9 @@ def SendNotification(request):
 
 
 
+from apns2.client import APNsClient
+from apns2.payload import Payload
+from django.conf import settings
 
 def sendfcmnotifiction(notification_ids):
     try:
@@ -1308,7 +1311,26 @@ def sendfcmnotifiction(notification_ids):
 
                 }
                 print("notification_ids_ios =========>",notification_ids_ios)
-                sendiosnotification(notification_ids_ios, data_ios)
+
+
+                for notification_id in notification_ids_ios:
+                    print(notification_id,"id send start-------------------")
+                    token_hex = notification_id
+
+                    alert_data = {"title": data_ios['title'], "body": data_ios['discription']}
+                
+                    extra =  {"data":{"urlImageString": data_ios['icon']}, "brand": data_ios['brand']}
+                    payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
+                    # payload = data
+                    # payload = apns2.Payload(alert=data)
+                    topic = 'com.app.CouponBoss'
+                    client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                    client.send_notification(token_hex, payload, topic)
+                    print("send sucessfullty--------------")
+
+
+
+                # sendiosnotification(notification_ids_ios, data_ios)
 
                 print("ios cREATED")
                 
@@ -1400,7 +1422,23 @@ def sendfcmnotifiction(notification_ids):
                 }
 
                 print("notification_ids_ios_arabic =========>",notification_ids_ios_arabic)
-                sendiosnotification(notification_ids_ios_arabic, data_ios_ar )
+                for notification_id in notification_ids_ios_arabic:
+                    print(notification_id,"id ar send start-------------------")
+                    token_hex = notification_id
+
+                    alert_data = {"title": data_ios_ar['title'], "body": data_ios_ar['discription']}
+                
+                    extra =  {"data":{"urlImageString": data_ios_ar['icon']}, "brand": data_ios_ar['brand']}
+                    payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
+                    # payload = data
+                    # payload = apns2.Payload(alert=data)
+                    topic = 'com.app.CouponBoss'
+                    client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                    client.send_notification(token_hex, payload, topic)
+                    print("send sucessfullty--------------")
+
+                # 
+                # sendiosnotification(notification_ids_ios_arabic, data_ios_ar )
 
                 print("ios arabic cREATED")
                 
@@ -1453,9 +1491,6 @@ def sendfcmnotifiction(notification_ids):
 
 
 
-from apns2.client import APNsClient
-from apns2.payload import Payload
-from django.conf import settings
 
 
 def sendiosnotification(notification_ids, data):
