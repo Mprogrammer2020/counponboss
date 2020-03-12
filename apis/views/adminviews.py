@@ -1215,18 +1215,20 @@ def sendfcmnotifiction(notification_ids):
                     if user_serializer.data[0]['language_code'] == 'en':
 
                         idList = user_serializer.data[0]['firebase_token'] 
-                        if  user_serializer.data[0]['device_type'] == "iOS":
-                            print(idList,"ios")
-                            notification_ids_ios.append(idList)
-                        else:
-                            notification_ids_android.append(idList)
+                        if idList != '':
+                            if  user_serializer.data[0]['device_type'] == "iOS":
+                                print(idList,"ios")
+                                notification_ids_ios.append(idList)
+                            else:
+                                notification_ids_android.append(idList)
                     else:
                         idList = user_serializer.data[0]['firebase_token'] 
-                        if  user_serializer.data[0]['device_type'] == "iOS":
-                            print(idList,"ios")
-                            notification_ids_ios_arabic.append(idList)
-                        else:
-                            notification_ids_android_arabic.append(idList)
+                        if idList != '':
+                            if  user_serializer.data[0]['device_type'] == "iOS":
+                                print(idList,"ios")
+                                notification_ids_ios_arabic.append(idList)
+                            else:
+                                notification_ids_android_arabic.append(idList)
 
             push_service = FCMNotification(api_key=fcm_api_key)
             
@@ -1314,19 +1316,20 @@ def sendfcmnotifiction(notification_ids):
 
 
                 for notification_id in notification_ids_ios:
-                    print(notification_id,"id send start-------------------")
-                    token_hex = notification_id
+                    if notification_id != '':
+                        print(notification_id,"id send start-------------------")
+                        token_hex = notification_id
 
-                    alert_data = {"title": data_ios['title'], "body": data_ios['discription']}
-                
-                    extra =  {"data":{"urlImageString": data_ios['icon']}, "brand": data_ios['brand']}
-                    payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
-                    # payload = data
-                    # payload = apns2.Payload(alert=data)
-                    topic = 'com.app.CouponBoss'
-                    client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
-                    client.send_notification(token_hex, payload, topic)
-                    print("send sucessfullty--------------")
+                        alert_data = {"title": data_ios['title'], "body": data_ios['discription']}
+                    
+                        extra =  {"data":{"urlImageString": data_ios['icon']}, "brand": data_ios['brand']}
+                        payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
+                        # payload = data
+                        # payload = apns2.Payload(alert=data)
+                        topic = 'com.app.CouponBoss'
+                        client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                        client.send_notification(token_hex, payload, topic)
+                        print("send sucessfullty--------------")
 
 
 
@@ -1424,18 +1427,19 @@ def sendfcmnotifiction(notification_ids):
                 print("notification_ids_ios_arabic =========>",notification_ids_ios_arabic)
                 for notification_id in notification_ids_ios_arabic:
                     print(notification_id,"id ar send start-------------------")
-                    token_hex = notification_id
+                    if notification_id != '':
+                        token_hex = notification_id
 
-                    alert_data = {"title": data_ios_ar['title'], "body": data_ios_ar['discription']}
-                
-                    extra =  {"data":{"urlImageString": data_ios_ar['icon']}, "brand": data_ios_ar['brand']}
-                    payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
-                    # payload = data
-                    # payload = apns2.Payload(alert=data)
-                    topic = 'com.app.CouponBoss'
-                    client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
-                    client.send_notification(token_hex, payload, topic)
-                    print("send sucessfullty--------------")
+                        alert_data = {"title": data_ios_ar['title'], "body": data_ios_ar['discription']}
+                    
+                        extra =  {"data":{"urlImageString": data_ios_ar['icon']}, "brand": data_ios_ar['brand']}
+                        payload = Payload(alert=alert_data, sound="default", badge=1, custom=extra,  mutable_content=1)
+                        # payload = data
+                        # payload = apns2.Payload(alert=data)
+                        topic = 'com.app.CouponBoss'
+                        client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                        client.send_notification(token_hex, payload, topic)
+                        print("send sucessfullty--------------")
 
                 # 
                 # sendiosnotification(notification_ids_ios_arabic, data_ios_ar )
