@@ -183,7 +183,7 @@ def UserRegister(request):
             # BrandId = request.data.get('BrandId') if request.data.get('BrandId') else None
             
             email = request.data.get('email') if request.data.get('email') else None
-            firebase_token = request.data.get('firebase_token') if request.data.get('firebase_token') else None
+            firebase_token = request.data.get('firebase_token') if request.data.get('firebase_token') else ""
          
          
             
