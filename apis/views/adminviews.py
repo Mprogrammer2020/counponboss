@@ -1328,7 +1328,7 @@ def sendfcmnotifiction(notification_ids):
                             # payload = data
                             # payload = apns2.Payload(alert=data)
                             topic = 'com.app.CouponBoss'
-                            client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                            client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=False, use_alternative_port=False)
                             result = client.send_notification(token_hex, payload, topic)
                             print("send sucessfullty--------------", result)
                         except:
@@ -1375,7 +1375,7 @@ def sendfcmnotifiction(notification_ids):
                             # payload = data
                             # payload = apns2.Payload(alert=data)
                             topic_ar = 'com.app.CouponBoss'
-                            client_ar = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
+                            client_ar = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=False, use_alternative_port=False)
                             result_ar = client_ar.send_notification(token_hex_ar, payload_ar, topic_ar)
                             print("send sucessfullty--------------", result_ar)
                         except:

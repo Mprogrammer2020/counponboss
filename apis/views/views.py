@@ -649,9 +649,14 @@ def Home(request):
                     coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
                     
                 couponsjson = CouponSerializer(coupons, many=True)
+
                 for coupn in couponsjson.data:
-                    past = arrow.get(str(coupn['last_usage_time'])).shift(seconds=-1)
-                    coupn['times_ago'] = past.humanize()
+                    print(coupn['last_usage_time'],"hjghfjvg")
+                    if coupn['last_usage_time'] == None:
+                        pass
+                    else:
+                        past = arrow.get(str(coupn['last_usage_time'])).shift(seconds=-1)
+                        coupn['times_ago'] = past.humanize()
 
                 couponudiscountindecimal(couponsjson)
 
