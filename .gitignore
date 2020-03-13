@@ -1,13 +1,16 @@
 
 **/__pycache__ 
 **/__pycache__ /
-*apis
-apis/
+
+apis/__pycache__
+apis/migrations/__pycache__/*
+/apis/__pycache__
+/apis/migrations/__pycache__/*
 /__pycache__ 
 *__pycache__ 
-*apis/__pycache__ /
-*/apis/__pycache__ /
+*apis/__pycache__/
+*/apis/__pycache__/
 apis/__pycache__ 
 /apis/__pycache__ 
-/apis/__pycache__ /
-/apis/__pycache__ /*
+/apis/__pycache__/
+/apis/__pycache__/*
