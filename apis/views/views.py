@@ -7,7 +7,7 @@ import json
 import string
 import random, pytz
 from django.utils import timezone
-
+import arrow
 import traceback
 from apis.models import *
 from django.views.decorators.csrf import csrf_exempt
@@ -138,12 +138,12 @@ def UserLogin(request):
                     userDetail = {'token':token, 'user': serialized_data.data }
                     return Response({"status" : "1", 'message':'User Login Sucessfully', 'data':userDetail, 'user_brands': user_brands_serialize.data}, status=status.HTTP_200_OK)
             else:
-            	return Response({"status" : "1", 'message':'Please Register Your Account.'}, status=status.HTTP_200_OK)
+                return Response({"status" : "1", 'message':'Please Register Your Account.'}, status=status.HTTP_200_OK)
                                
 
     except Exception as e:
         print(traceback.format_exc())
-        return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'status':0, 'message':"Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 ############################################################
@@ -183,7 +183,7 @@ def UserRegister(request):
             # BrandId = request.data.get('BrandId') if request.data.get('BrandId') else None
             
             email = request.data.get('email') if request.data.get('email') else None
-            firebase_token = request.data.get('firebase_token') if request.data.get('firebase_token') else None
+            firebase_token = request.data.get('firebase_token') if request.data.get('firebase_token') else ""
          
          
             
@@ -302,7 +302,7 @@ def UserRegister(request):
                 return Response({"status" : "1", 'message':'User has been successfully registered.', 'data' : userDetail, "is_registered": False}, status=status.HTTP_200_OK)                          
     except Exception as e:
         print(traceback.format_exc())
-        return Response({'status':0, 'message':"Something Wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({'status':0, 'message':"Something went wrong."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 ############################################################
 #             Coupon Detail
@@ -411,8 +411,11 @@ def UsedCoupon(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             usercoupons = UserCouponLogs.objects.filter(user_id= result.id, is_used=1 )
             coupons_id = usercoupons.values_list('coupon_id', flat=True)
-            coupons = Coupon.objects.filter(id__in=coupons_id).order_by('-created_time')
+            coupons = Coupon.objects.filter(id__in=coupons_id).order_by('-last_usage_time')
             coupon_detail = CouponSerializer(coupons, many=True)
+            for coupnd in coupon_detail.data:
+                    past = arrow.get(str(coupnd['last_usage_time'])).shift(seconds=-1)
+                    coupnd['times_ago'] = past.humanize()
             couponudiscountindecimal(coupon_detail)
             return Response({"message" : "Success", "status" : "1", "Coupon": coupon_detail.data}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -450,6 +453,7 @@ def OnOffNotification(request):
 #             Notification List
 ############################################################
 from django.contrib.humanize import *
+
 @csrf_exempt
 @api_view(['GET'])
 def NotificationList(request):
@@ -470,8 +474,8 @@ def NotificationList(request):
             notifications.update(is_read=True)
             notifications_json = NotificationSerializer(notifications, many=True)
             for notification in notifications_json.data:
-                pass
-                #  notification['time_in_words'] = timesince:comment_date
+                past = arrow.get(str(notification['created_time'])).shift(seconds=-1)
+                notification['times_ago'] = past.humanize()
             return Response({"message" : "Success", "status" : "1", "Notifications": notifications_json.data}, status=status.HTTP_201_CREATED)
     except Exception:
         print(traceback.format_exc())
@@ -500,8 +504,7 @@ def add_delete_brandsinhome(request):
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
             brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
             brandi = Brands.objects.filter(id__in = brandc ,status=1)
-            
-            
+        
             if brandi:
                 print("entegfgfgfr")
                 if(request.data['status'] == 0):   
@@ -646,6 +649,9 @@ def Home(request):
                     coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
                     
                 couponsjson = CouponSerializer(coupons, many=True)
+                for coupn in couponsjson.data:
+                    past = arrow.get(str(coupn['last_usage_time'])).shift(seconds=-1)
+                    coupn['times_ago'] = past.humanize()
 
                 couponudiscountindecimal(couponsjson)
 
@@ -978,6 +984,7 @@ def Change_Country(request):
                 langu = User.objects.get(id = user.id)
                 lang_code = langu.language_code
             print(authUser)
+        
             if authUser:
                 return Response({"status" : "1", 'message': change_value+' Changed successfully.','language':lang_code}, status=status.HTTP_200_OK)
 
