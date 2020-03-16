@@ -1986,10 +1986,6 @@ def GetCountriesByBrand(request):
                 countries = Country.objects.filter(id__in=(BrandCountries.objects.filter(brand_id__in=brand).values_list('country', flat=True)))
                 if countries.__len__() > 0:
                     countries_json = CountrySerializer(countries, many=True)
-                # usergroups = Group.objects.filter(name='User')
-                # users = usergroups.values_list('user', flat=True)
-                # users_list = User.objects.filter(id__in = users, country=request.data["countryId"])
-                # users_serializer = UserSerializer(users_list, many = True)
                     for index, data in  enumerate(countries_json.data):
                             countries_json.data[index]['itemName'] = countries_json.data[index]['name']
                     return Response({"message" : addSuccessMessage, "response" : countries_json.data, "status" : "1"}, status=status.HTTP_200_OK)
