@@ -668,7 +668,13 @@ def Edit_Brands(request):
 
                     if brand_detail is not None:
                         delete_brand_countries = BrandCountries.objects.filter(brand_id__in=brand).delete()
+                        coupon_countries =Coupon.objects.filter(brand_id__in=brand)
+
+                        CouponCountries.objects.filter(coupon_id__in=coupon_countries).delete()
+                        coupon_countries.delete()
                         try:
+                            # for ctry in request.data['country']:
+
                             for ctry in request.data['country']:
                                 country = Country.objects.filter(id=ctry['id']).first()
                                 currentbrand =  Brands.objects.get(id=brandId)

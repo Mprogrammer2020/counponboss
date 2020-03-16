@@ -610,20 +610,25 @@ def Home(request):
                 social_serializer = SocialMediaSerializer(social_list, many = True)
             else:
                 social_serializer = None
-            brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
-            print(brandc,"brandccccccccccc")
+            brandc = BrandCountries.objects.filter(country_id = user.country_id,status=1).values_list('brand_id')
+            print(brandc,"brand countrries")
             
             userselectedbrands = UserSelectedBrands.objects.filter(user_id=result.id,brand_id__in=brandc)
+            print(userselectedbrands,"userselectedbrands")
             brand_ids = userselectedbrands.values_list('brand_id', flat=True)
+            print(brand_ids,"brand_ids")
 
             brands = Brands.objects.filter(id__in=brand_ids,status=1)
             print(brands,"brands")
             usedbrandsjson = BrandSerializer(brands, many=True)
             
-            # if brand_ids.count() > 0:
-            #     featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
-            # else:
-            featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
+            if brand_ids.count() > 0:
+                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+                print(featuredcoupons,"if part")
+            else:
+                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
+                featuredcoupons=[]
+                print(featuredcoupons,"else part")
 
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
             couponudiscountindecimal(featuredcouponsjson)
@@ -635,6 +640,7 @@ def Home(request):
             user_data = UserSerializer(result)
             print(result.firebase_token,"jhgh")
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id,country_id = result.country_id, is_read= False).count()
+            print(brand.count(),"brand count")
             if brand.count() > 0:
             # brandslist = Brands.objects.filter(status=1)
             # print(brandslist)
@@ -645,8 +651,12 @@ def Home(request):
                 getSelectedBrand(brandshash, result)
                 if brand_ids.count() > 0:
                     coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'), brand_id__in=brand_ids)
+                    print(coupons,"if part")
                 else:
                     coupons = Coupon.objects.filter(status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+                    # pass
+                    coupons = []
+                    print(coupons,"else part")
                     
                 couponsjson = CouponSerializer(coupons, many=True)
 
@@ -659,6 +669,7 @@ def Home(request):
                         coupn['times_ago'] = past.humanize()
 
                 couponudiscountindecimal(couponsjson)
+                
 
                 return Response({"message" : "Success", "status" : "1", "featuredcoupons": featuredcouponsjson.data, "selectedbrands":usedbrandsjson.data, "brandslist":brandshash, "couponslist": couponsjson.data, "on_off_notification":user_data.data['on_off_notification'], 'no_of_unread_notifications': no_of_unread_notifications,'firebase_token':result.firebase_token,'sociallinks':social_serializer.data}, status=status.HTTP_201_CREATED)
             else:
@@ -988,7 +999,7 @@ def Change_Country(request):
                 change_value = "Location"
                 langu = User.objects.get(id = user.id)
                 lang_code = langu.language_code
-            print(authUser)
+            
         
             if authUser:
                 return Response({"status" : "1", 'message': change_value+' Changed successfully.','language':lang_code}, status=status.HTTP_200_OK)
