@@ -719,8 +719,10 @@ def Show_Brand(request):
                 countries = Country.objects.filter(id__in = country_ids)
                 countries_ids = countries.values_list('id', flat=True)
                 selected_country = CountrySerializer(countries, many=True)
+                for index, data in  enumerate(selected_country.data):
+                    selected_country.data[index]['itemName'] = selected_country.data[index]['name']
                 brand_detail = BrandSerializer(brand)
-                return Response({"message" : addSuccessMessage, "status" : "1", "brand": brand_detail.data, "brands_country": countries_ids}, status=status.HTTP_201_CREATED)
+                return Response({"message" : addSuccessMessage, "status" : "1", "brand": brand_detail.data, "brands_country": countries_ids, "selected_country": selected_country.data}, status=status.HTTP_201_CREATED)
             else:
                 return Response({"message" : "Brand Not Found", "status" : "1"}, status=status.HTTP_201_CREATED)
     except Exception:
@@ -1291,6 +1293,7 @@ def sendfcmnotifiction(notification_ids):
                             "badge": 1,
                             "category": "CustomSamplePush",
                             "brand" : notify_data.data['brand'],    
+
                         },
                         "data": {
                             "urlImageString": "http://159.89.49.231:8000"+notify_data.data['image'],
@@ -1587,6 +1590,8 @@ def Det_Cop(request):
                 countries = Country.objects.filter(id__in = country_ids)
                 countries_ids = countries.values_list('id', flat=True)
                 selected_country = CountrySerializer(countries, many=True)
+                for index, data in  enumerate(selected_country.data):
+                    selected_country.data[index]['itemName'] = selected_country.data[index]['name']
 
                 obj["useful_coupons"] = UserCouponLogs.objects.filter(coupon_id=couponId, is_used=1).count()
                 obj["notuseful_coupons"] = UserCouponLogs.objects.filter(coupon_id=couponId, is_used=2).count()
@@ -1959,3 +1964,38 @@ def GetUsersByCountry(request):
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['POST'])
+def GetCountriesByBrand(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            brand = Brands.objects.filter(id=request.data['brandId'])
+            if brand.__len__() > 0:
+                countries = Country.objects.filter(id__in=(BrandCountries.objects.filter(brand_id__in=brand).values_list('country', flat=True)))
+                if countries.__len__() > 0:
+                    countries_json = CountrySerializer(countries, many=True)
+                # usergroups = Group.objects.filter(name='User')
+                # users = usergroups.values_list('user', flat=True)
+                # users_list = User.objects.filter(id__in = users, country=request.data["countryId"])
+                # users_serializer = UserSerializer(users_list, many = True)
+                    for index, data in  enumerate(countries_json.data):
+                            countries_json.data[index]['itemName'] = countries_json.data[index]['name']
+                    return Response({"message" : addSuccessMessage, "response" : countries_json.data, "status" : "1"}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"message" : addSuccessMessage, "response" : [], "status" : "1"}, status=status.HTTP_200_OK)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
