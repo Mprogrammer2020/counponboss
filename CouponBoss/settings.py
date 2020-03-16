@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'apis',
     'rest_framework',
     'rest_framework.authtoken',
+    
 ]
 
 MIDDLEWARE = [
@@ -107,28 +108,13 @@ WSGI_APPLICATION = 'CouponBoss.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'coupon',
-#         'USER': 'root',
-#         'PASSWORD': 'root',
-#         #'PASSWORD': 'Netset@123',
-#         'HOST': 'localhost',  # OD113610194880343000
-#         'PORT': '3306',
-#         'OPTIONS': {
-#             'sql_mode': 'traditional',
-#         }
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'coupon',
         'USER': 'root',
-        #'PASSWORD': 'root',
-        'PASSWORD': '@boss!Apps4321!',
+        'PASSWORD': 'root',
+        #'PASSWORD': 'Netset@123',
         'HOST': 'localhost',  # OD113610194880343000
         'PORT': '3306',
         'OPTIONS': {
@@ -136,6 +122,21 @@ DATABASES = {
         }
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'coupon',
+#         'USER': 'root',
+#         #'PASSWORD': 'root',
+#         'PASSWORD': '@boss!Apps4321!',
+#         'HOST': 'localhost',  # OD113610194880343000
+#         'PORT': '3306',
+#         'OPTIONS': {
+#             'sql_mode': 'traditional',
+#         }
+#     }
+# }
 
 
 
@@ -181,9 +182,9 @@ USE_TZ = True
 AUTH_USER_MODEL = 'apis.User'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcert.pem")
-APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcertLive.pem")
-APPLE_PEM_FILE_URL = '/pushcertLive.pem'
+APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcert.pem")
+# APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcertLive.pem")
+APPLE_PEM_FILE_URL = '/pushcert.pem'
 ASSETS_ROOT = os.path.join(BASE_DIR, 'assets')
 ASSET_URL="/assets"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

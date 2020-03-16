@@ -369,6 +369,12 @@ def Edit_Coupon(request):
             
             coupon_id = request.data['coupon_id']
             coupon1 =  Coupon.objects.filter(id=coupon_id).exists()
+            print(request.data['is_featured'],"before")
+            if request.data['is_featured']=='true':
+                request.data['is_featured']="True"
+            else:
+                request.data['is_featured']="False"
+            print(request.data['is_featured'],"after")
             if coupon1:
                                 
                 coupon_update = Coupon.objects.filter(id = request.data['coupon_id']).update(headline = request.data['headline'],
@@ -1337,7 +1343,7 @@ def sendfcmnotifiction(notification_ids):
                             # payload = data
                             # payload = apns2.Payload(alert=data)
                             topic = 'com.app.CouponBoss'
-                            client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=False, use_alternative_port=False)
+                            client = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
                             result = client.send_notification(token_hex, payload, topic)
                             print("send sucessfullty--------------", result)
                         except:
@@ -1384,7 +1390,7 @@ def sendfcmnotifiction(notification_ids):
                             # payload = data
                             # payload = apns2.Payload(alert=data)
                             topic_ar = 'com.app.CouponBoss'
-                            client_ar = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=False, use_alternative_port=False)
+                            client_ar = APNsClient(settings.APPLE_PEM_FILE, use_sandbox=True, use_alternative_port=False)
                             result_ar = client_ar.send_notification(token_hex_ar, payload_ar, topic_ar)
                             print("send sucessfullty--------------", result_ar)
                         except:
