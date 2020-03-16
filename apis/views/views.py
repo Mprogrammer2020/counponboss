@@ -626,8 +626,8 @@ def Home(request):
                 featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
                 print(featuredcoupons,"if part")
             else:
-                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
-                featuredcoupons=[]
+                # featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
+                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
                 print(featuredcoupons,"else part")
 
             featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
