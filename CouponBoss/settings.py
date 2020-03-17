@@ -182,9 +182,9 @@ USE_TZ = True
 AUTH_USER_MODEL = 'apis.User'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcert.pem")
-APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcertLive.pem")
-APPLE_PEM_FILE_URL = '/pushcertLive.pem'
+APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcert.pem")
+#APPLE_PEM_FILE =  os.path.join(BASE_DIR, "pushcertLive.pem")
+APPLE_PEM_FILE_URL = '/pushcert.pem'
 ASSETS_ROOT = os.path.join(BASE_DIR, 'assets')
 ASSET_URL="/assets"
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
