@@ -372,7 +372,7 @@ def Edit_Coupon(request):
             print(request.data['is_featured'],"before")
             if request.data['is_featured']=='true':
                 request.data['is_featured']="True"
-            else:
+            elif request.data['is_featured']=='false':
                 request.data['is_featured']="False"
             print(request.data['is_featured'],"after")
             if coupon1:
