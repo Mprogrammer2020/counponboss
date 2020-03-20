@@ -36,6 +36,8 @@ class Brands(models.Model):
     id = models.BigAutoField(primary_key=True)
     name = models.CharField(max_length=150,default="")
     name_ar = models.CharField(max_length=150,blank=True)
+    discription = models.CharField(max_length=255,blank=True)
+    discription_ar = models.CharField(max_length=255,blank=True)
     image = models.CharField(max_length=255,default="")
     url = models.CharField(max_length=255,default="")
     status = models.IntegerField(default=1)

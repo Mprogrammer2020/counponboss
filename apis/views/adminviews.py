@@ -620,6 +620,8 @@ def Add_Brands(request):
                               
                 brand_detail=Brands.objects.create(name = request.data['name'],
                                                     name_ar = request.data['name_ar'],
+                                                    discription_ar = request.data['discription_ar'],
+                                                    discription = request.data['discription'],
                                                 url = request.data['website_url'])
                     
                 if brand_detail is not None:
@@ -670,6 +672,8 @@ def Edit_Brands(request):
                 if len(request.data['country']) > 0 :
                     brand_detail=Brands.objects.filter(id=brandId).update(name = request.data['name'],
                                                     name_ar = request.data['name_ar'],
+                                                    discription_ar = request.data['discription_ar'],
+                                                    discription = request.data['discription'],
                                                     url = request.data['website_url'])
 
                     if brand_detail is not None:
