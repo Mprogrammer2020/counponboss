@@ -450,8 +450,12 @@ def getCouponBrands(coup):
 def couponlist():
     coupon_list = Coupon.objects.filter(status=1)
     if coupon_list is not None:
+       
         coupon_serializer = CouponSerializer(coupon_list, many=True)
         coup = coupon_serializer.data
+        for index, data in  enumerate(coup):
+            total_used_copons = UserCouponLogs.objects.filter(is_used=1, coupon_id=coup[index]["id"]).count()
+            coup[index]["total_used_coupons"] = total_used_copons
 
         # Added coupon Countries in List 
         getCouponCountries(coup)
@@ -505,6 +509,9 @@ def Get_Coupons(request):
                         if coupon_list is not None:
                             coupon_serializer = CouponSerializer(coupon_list, many=True)
                             coup = coupon_serializer.data
+                            for index, data in  enumerate(coup):
+                                total_used_copons = UserCouponLogs.objects.filter(is_used=1, coupon_id=coup[index]["id"]).count()
+                                coup[index]["total_used_coupons"] = total_used_copons
 
                            # Added coupon Countries in List 
                             getCouponCountries(coup)
@@ -522,6 +529,10 @@ def Get_Coupons(request):
                             coupon_serializer = CouponSerializer(coupon_list, many=True)
                             coup = coupon_serializer.data
 
+                            for index, data in  enumerate(coup):
+                                total_used_copons = UserCouponLogs.objects.filter(is_used=1, coupon_id=coup[index]["id"]).count()
+                                coup[index]["total_used_coupons"] = total_used_copons
+
                            # Added coupon Countries in List 
                             getCouponCountries(coup)
 
@@ -538,6 +549,9 @@ def Get_Coupons(request):
                         if coupon_list is not None:
                             coupon_serializer = CouponSerializer(coupon_list, many=True)
                             coup = coupon_serializer.data
+                            for index, data in  enumerate(coup):
+                                total_used_copons = UserCouponLogs.objects.filter(is_used=1, coupon_id=coup[index]["id"]).count()
+                                coup[index]["total_used_coupons"] = total_used_copons
 
                            # Added coupon Countries in List 
                             getCouponCountries(coup)
