@@ -57,6 +57,7 @@ urlpatterns = [
     path('apis/delete_social', api_views.Delete_Social, name='Delete_Social'),
     path('apis/getusersbycountry', api_views.GetUsersByCountry, name='GetUsersByCountry'),
     path('apis/getcountriesbybrands', api_views.GetCountriesByBrand, name='GetCountriesByBrand'),
+    path('apis/getbrandsbycountry', api_views.GetBrandsBycountry, name='GetBrandsBycountry'),
 
     # url(r'^api/auth', api_views.password_change, name='auth'),
     #User App Urls

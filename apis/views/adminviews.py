@@ -327,14 +327,17 @@ def Add_Coupon(request):
 
             if coupon_detail is not None:                                       
                 try:
-                    for elem in request.data['country']:
-                        cntry = Country.objects.filter(id=elem['id']).first()
-                        if cntry:
+                    # for elem in request.data['countryId']:
+                    #     cntry = Country.objects.filter(id=elem['id']).first()
+                    #     if cntry:
 
-                            coupon_countries=CouponCountries.objects.create(coupon_id = coupon_detail.id,
-                                                                    country_id = cntry.id
+                    #         coupon_countries=CouponCountries.objects.create(coupon_id = coupon_detail.id,
+                    #                                                 country_id = cntry.id
 
-                                                                     )
+                    #   
+                    #                                               )
+                    coupon_countries = CouponCountries.objects.create(coupon_id = coupon_detail.id,
+                                                                        country_id = request.data['countryId'])
                 except Exception:
                     print(traceback.format_exc())
                     return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -401,16 +404,19 @@ def Edit_Coupon(request):
                     delete_coupon_countries = CouponCountries.objects.filter(coupon_id=coupon_id).delete()
 
                     try:
-                        for elem in request.data['country']:
-                            cntry = Country.objects.filter(id = elem['id']).first()
-                            cupn = Coupon.objects.get(id = coupon_id)
+                        # for elem in request.data['country']:
+                        #     cntry = Country.objects.filter(id = elem['id']).first()
+                        #     cupn = Coupon.objects.get(id = coupon_id)
 
-                            if cntry:
+                        #     if cntry:
 
-                                coupon_countries=CouponCountries.objects.create(coupon_id = cupn.id,
-                                                                    country_id = cntry.id
+                        #         coupon_countries=CouponCountries.objects.create(coupon_id = cupn.id,
+                        #                                             country_id = cntry.id
 
-                                                                     )
+                        #                                              )
+                        cupn = Coupon.objects.get(id = coupon_id)
+                        coupon_countries = CouponCountries.objects.create(coupon_id = cupn.id,
+                                                                        country_id = request.data['countryId'])
                     
                     except Exception:
                         print(traceback.format_exc())
@@ -692,10 +698,11 @@ def Edit_Brands(request):
 
                     if brand_detail is not None:
                         delete_brand_countries = BrandCountries.objects.filter(brand_id__in=brand).delete()
-                        coupon_countries =Coupon.objects.filter(brand_id__in=brand)
+                        
+                        # coupon_countries =Coupon.objects.filter(brand_id__in=brand)
 
-                        CouponCountries.objects.filter(coupon_id__in=coupon_countries).delete()
-                        coupon_countries.delete()
+                        # CouponCountries.objects.filter(coupon_id__in=coupon_countries).delete()
+                        # coupon_countries.delete()
                         try:
                             # for ctry in request.data['country']:
 
@@ -1097,10 +1104,34 @@ def Dashboard(request):
             except:
                 print(traceback.format_exc())
                 return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            tempS = str(timezone.now().time())
+            tempS = tempS[:8]
+            today_date = datetime.strptime(str(timezone.now().date()) + " " + tempS, '%Y-%m-%d %H:%M:%S')
+            today_dte = today_date.date()
+            print(type(today_dte))
+            
             total_coupons = Coupon.objects.filter(status=1).count()
             total_used_copons = UserCouponLogs.objects.filter(is_used=1).count()
+            cop = UserCouponLogs.objects.filter(is_used=1)
+            detail = UserCouponLogsSerializer(cop,many=True)
+            c = detail.data
+            print(c)
+            total_used_coup_today = 0
+            for i in c:
+                dt = datetime.strptime(i['created_time'], '%Y-%m-%d %H:%M:%S')
+                dte = dt.date()
+                print(type(dte))
+                print(dte)
+                print(today_dte)
+                if dte > today_dte or dte < today_dte:
+                    total_used_coup_today = 0
+                else:
+                    total_used_coup_today = total_used_coup_today+1
+            print(total_used_coup_today)
+            #     
 
-            return Response({"total_coupons" : total_coupons, "total_used_copons" : total_used_copons,"status" : "1"}, status=status.HTTP_200_OK)          
+            return Response({"total_coupons" : total_coupons, "total_used_copons" : total_used_copons,"total_used_coup_today":total_used_coup_today,"status" : "1"}, status=status.HTTP_200_OK)          
     except Exception:
         print(traceback.format_exc())
         return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -2019,6 +2050,40 @@ def GetCountriesByBrand(request):
                     for index, data in  enumerate(countries_json.data):
                             countries_json.data[index]['itemName'] = countries_json.data[index]['name']
                     return Response({"message" : addSuccessMessage, "response" : countries_json.data, "status" : "1"}, status=status.HTTP_200_OK)
+                else:
+                    return Response({"message" : addSuccessMessage, "response" : [], "status" : "1"}, status=status.HTTP_200_OK)
+    except Exception:
+        print(traceback.format_exc())
+        return Response({"message" : errorMessage, "status" : "0"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(['POST'])
+def GetBrandsBycountry(request):
+    try:
+        with transaction.atomic():
+            
+            try:
+                api_key = request.META.get('HTTP_AUTHORIZATION')
+                token1 = Token.objects.get(key=api_key)
+                user = token1.user
+                check_group = user.groups.filter(name='Admin').exists()
+                if check_group == False:
+                    return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            except:
+                print(traceback.format_exc())
+                return Response({"message" : errorMessageUnauthorised, "status" : "0"}, status=status.HTTP_401_UNAUTHORIZED)
+            country = Country.objects.filter(id=request.data['countryId'])
+            
+            if country.__len__() > 0:
+                #brands_country = BrandCountries.objects.filter(country_id__in=country)
+                #print(brands_country,"hhh")
+                #brands = Brands.objects.filter(id__in=brands_country)
+                brands = Brands.objects.filter(id__in=(BrandCountries.objects.filter(country_id__in=country).values_list('brand', flat=True)))
+                print(brands,"kkkkkkkkk")
+                if brands.__len__() > 0:
+                    brands_json = BrandSerializer(brands, many=True)
+                    for index, data in  enumerate(brands_json.data):
+                            brands_json.data[index]['itemName'] = brands_json.data[index]['name']
+                    return Response({"message" : addSuccessMessage, "response" : brands_json.data, "status" : "1"}, status=status.HTTP_200_OK)
                 else:
                     return Response({"message" : addSuccessMessage, "response" : [], "status" : "1"}, status=status.HTTP_200_OK)
     except Exception:
