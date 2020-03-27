@@ -623,29 +623,41 @@ def Home(request):
             usedbrandsjson = BrandSerializer(brands, many=True)
             
             if brand_ids.count() > 0:
-                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
-                print(featuredcoupons,"if part")
+                par_brand = Brands.objects.filter(id__in = brandc,status=1,name__icontains="Noon")
+                featuredcoupons_par = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id')).filter(brand_id__in = par_brand)
+                print(featuredcoupons_par,"kkkkkk")
+                brand_i = Brands.objects.filter(id__in = brandc,status=1).exclude(name__icontains="Noon")
+                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id')).filter(brand_id__in = brand_i)
+                print(featuredcoupons,"llllllllllll")
+                fet_cmb_query = featuredcoupons_par.union(featuredcoupons)
+                print(fet_cmb_query,"if part")
             else:
                 # featuredcoupons = Coupon.objects.filter(is_featured= True, status=1)
-                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+                #featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id'))
+                par_brand = Brands.objects.filter(id__in = brandc,status=1,name__icontains="Noon")
+                featuredcoupons_par = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id')).filter(brand_id__in = par_brand)
+                brand_i = Brands.objects.filter(id__in = brandc,status=1).exclude(name__icontains="Noon")
+                featuredcoupons = Coupon.objects.filter(is_featured= True, status=1, id__in=CouponCountries.objects.filter(country_id=user.country_id).values_list('coupon_id')).filter(brand_id__in = brand_i)
+                fet_cmb_query = featuredcoupons_par.union(featuredcoupons)
                 print(featuredcoupons,"else part")
 
-            featuredcouponsjson = CouponSerializer(featuredcoupons, many=True)
+            featuredcouponsjson = CouponSerializer(fet_cmb_query, many=True)
             couponudiscountindecimal(featuredcouponsjson)
             
             # brandc = BrandCountries.objects.filter(country_id = user.country_id).values_list('brand_id')
-            brand = Brands.objects.filter(id__in = brandc,status=1)
+            par_brand = Brands.objects.filter(id__in = brandc,status=1,name__icontains="Noon")
+            brand = Brands.objects.filter(id__in = brandc,status=1).exclude(name__icontains="Noon")
             print(brand,"brand")
-
+            cmb_query = par_brand.union(brand)
             user_data = UserSerializer(result)
             print(result.firebase_token,"jhgh")
             no_of_unread_notifications = Notification.objects.filter(receiver_id=result.id,country_id = result.country_id, is_read= False).count()
             print(brand.count(),"brand count")
-            if brand.count() > 0:
+            if cmb_query.count() > 0:
             # brandslist = Brands.objects.filter(status=1)
             # print(brandslist)
             # brandsjson = BrandSerializer(brandslist, many=True)
-                brandsjson = BrandSerializer(brand, many = True)
+                brandsjson = BrandSerializer(cmb_query, many = True)
 
                 brandshash = brandsjson.data
                 getSelectedBrand(brandshash, result)
@@ -716,11 +728,13 @@ def Brands_List(request):
                 
             brandc = BrandCountries.objects.filter(country_id = user.country_id ,status = 1).values_list('brand_id')
             brand = Brands.objects.filter(id__in = brandc,status=1)
-            print(brandc)
+            print(brand,"brand")
+            
             if brand:
                 #brand_list = Brands.objects.filter(status=1)
                 
                 brand_serializer = BrandSerializer(brand, many = True).data
+                print(brand_serializer)
             
                 return Response({"message" : addSuccessMessage, "response" : brand_serializer, "status" : "1"}, status=status.HTTP_200_OK)
             else:
